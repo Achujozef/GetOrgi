@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+
+# Django migrations (you can track initial ones if needed)
+*/migrations/
+!*/migrations/__init__.py
+
+# Environment
+.env
+env/
+venv/
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# PyCharm
+.idea/
+
+# Byte-compiled / optimized / DLL files
+*.py[cod]
+*$py.class
+
+# Static/media files (if you build or serve externally)
+staticfiles/
+media/
+
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+
+# Test and debug
+*.mo
+*.pot
+*.log
+*.swp
+
+# Node (if you ever use npm)
+node_modules/
+
+# Build
+build/
+dist/
+*.egg-info/

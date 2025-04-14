@@ -1,0 +1,141 @@
+<!-- templates/core/landing.html -->
+
+{% extends 'base.html' %}
+{% load dict_filters %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Banner -->
+<div class="container-fluid px-0">
+    <img src="/static/image1.jpg" class="img-fluid w-100" alt="Banner" style="max-height: 350px; object-fit: cover;">
+</div>
+
+<!-- Categories -->
+<div class="container my-5">
+    <h2 class="text-success text-center">Shop by Category</h2>
+    <div id="category-buttons" class="d-flex flex-wrap justify-content-center mt-3 gap-2">
+        <button class="btn btn-outline-success active" onclick="filterCategory('all', this)">
+            All
+        </button>
+        {% for category in categories %}
+        <button class="btn btn-outline-success {% if forloop.first %}active{% endif %}" onclick="filterCategory('{{ category.id }}', this)">
+            {{ category.name }}
+        </button>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row gy-4" id="product-list">
+        {% for product in products %}
+        <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+            <div class="card h-100 shadow-sm product-card" data-category="{{ product.category.id }}">
+                
+                <!-- Clickable Link Area -->
+                <a href="{% url 'product_detail' product.pk %}" class="text-decoration-none text-dark product-link" style="display: block;">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top img-fluid" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text text-success">₹{{ product.price }}</p>
+                    </div>
+                </a>
+
+                <!-- Quantity Controls (Non-clickable zone) -->
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-center align-items-center mt-2">
+                        <button class="btn btn-sm btn-outline-success prevent-click">-</button>
+                        <input type="text" value="{{ cart_quantities|get_item:product.id|default:'0' }}"
+                        class="form-control form-control-sm text-center mx-2 prevent-click quantity-box" 
+                        style="width: 50px;" data-product-id="{{ product.id }}">
+                 
+                        <button class="btn btn-sm btn-outline-success prevent-click">+</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<!-- Optional Footer -->
+<footer class="bg-success text-white text-center py-3 w-100">
+    <div class="container">
+        <p class="mb-0">&copy; 2025 Organic Shop. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+    function filterCategory(categoryId, buttonEl) {
+        document.querySelectorAll('#category-buttons button').forEach(btn => btn.classList.remove('active'));
+        buttonEl.classList.add('active');
+    
+        document.querySelectorAll('.product-card').forEach(card => {
+            if (categoryId === 'all' || card.getAttribute('data-category') === categoryId) {
+                card.parentElement.style.display = 'block';
+            } else {
+                card.parentElement.style.display = 'none';
+            }
+        });
+    }
+    
+    // Prevent navigation when clicking on quantity buttons/inputs
+    document.querySelectorAll('.prevent-click').forEach(el => {
+        el.addEventListener('click', e => {
+            e.stopPropagation();
+        });
+    });
+
+    document.querySelectorAll('.product-link').forEach(link => {
+        link.addEventListener('click', e => {
+            if (e.target.classList.contains('prevent-click')) {
+                e.preventDefault(); // Don't follow link from inside quantity controls
+            }
+        });
+    });
+</script>
+<script>
+    function updateCart(productId, action, inputBox) {
+        fetch("{% url 'update_cart_ajax' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: new URLSearchParams({
+                product_id: productId,
+                action: action
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                inputBox.value = data.new_quantity;
+                document.getElementById('cart-count').innerText = data.cart_count;
+            }
+        });
+    }
+    
+    document.querySelectorAll('.product-card').forEach(card => {
+        const productId = card.querySelector('.quantity-box').dataset.productId;
+        const inputBox = card.querySelector('.quantity-box');
+        const minusBtn = card.querySelectorAll('.btn-outline-success')[0];
+        const plusBtn = card.querySelectorAll('.btn-outline-success')[1];
+    
+        plusBtn.addEventListener('click', function () {
+            updateCart(productId, 'increase', inputBox);
+        });
+    
+        minusBtn.addEventListener('click', function () {
+            if (parseInt(inputBox.value) > 0) {
+                updateCart(productId, 'decrease', inputBox);
+            }
+        });
+    });
+    </script>
+    
+{% endblock %}

@@ -1,0 +1,52 @@
+
+{% comment %} {% load dict_filters %} {% endcomment %}
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}E-Commerce{% endblock %}</title>
+</head>
+<body>
+    <header>
+        {% comment %} <h1>🛍️ My E-Commerce Site</h1> {% endcomment %}
+    </header>
+    
+    <main>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-success w-100">
+            <div class="container">
+              <a class="navbar-brand" href="#">Organic Shop</a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                  <li class="nav-item"><a class="nav-link text-white" href="#">Home</a></li>
+                  <li class="nav-item"><a class="nav-link text-white" href="#">Shop</a></li>
+                  <li class="nav-item"><a class="nav-link text-white" href="#">Contact</a></li>
+                </ul>
+              </div>
+            </div>
+          </nav>
+        {% block content %}
+        {% endblock %}
+        <a href="{% url 'cart' %}">
+          <button class="btn btn-success rounded-pill px-4 py-2">
+            Cart (<span id="cart-count">{{ cart_count }}</span>)
+          </button>
+        </a>
+        
+      
+    </main>
+
+    <footer>
+        <p>&copy; 2025 My Store</p>
+    </footer>
+    <!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap Bundle with Popper.js (required for modals) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
