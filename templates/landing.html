@@ -116,6 +116,9 @@
             if (data.status === 'success') {
                 inputBox.value = data.new_quantity;
                 document.getElementById('cart-count').innerText = data.cart_count;
+            } else if (data.status === 'error' && data.redirect === 'login') {
+                // Redirect to login page if the user is not logged in
+                window.location.href = "/login";  // Change '/login' to the correct login URL if necessary
             }
         });
     }

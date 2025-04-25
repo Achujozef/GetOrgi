@@ -25,7 +25,7 @@
                 <label for="mobile" class="form-label">Mobile Number</label>
                 <input type="text" class="form-control" name="mobile" placeholder="Enter your mobile" required>
             </div>
-
+            <input type="hidden" name="next" value="{{ request.GET.next }}">
             <div class="d-grid gap-2">
                 <button type="submit" class="btn btn-success">Continue Shopping</button>
             </div>

@@ -19,14 +19,19 @@
       <p>Total Purchases: {{ product.purchase_count }}</p>
 
       <div class="d-flex align-items-center my-3">
-        <button class="btn btn-sm btn-outline-success">-</button>
-        <input type="text" value="1" class="form-control form-control-sm text-center mx-2" style="width: 60px;">
-        <button class="btn btn-sm btn-outline-success">+</button>
+        <button class="btn btn-sm btn-outline-success" id="decrease-quantity">Remove from Cart</button>
+        {% if cart_item %}
+            <input type="text" value="{{ cart_item.quantity }}" class="form-control form-control-sm text-center mx-2" style="width: 60px;" id="quantity-input">
+        {% else %}
+            <input type="text" value="0" class="form-control form-control-sm text-center mx-2" style="width: 60px;" id="quantity-input">
+        {% endif %}
+
+        <button class="btn btn-sm btn-outline-success" id="increase-quantity">Add to Cart</button>
       </div>
 
-      <div class="d-flex gap-3">
-        <button class="btn btn-success px-4">Add to Cart</button>
-        <button class="btn btn-outline-success px-4">Buy Now</button>
+      <!-- Continue with Cart button -->
+      <div class="my-3">
+        <a href="{% url 'cart' %}" class="btn btn-outline-success">Continue with Cart</a>
       </div>
     </div>
   </div>
@@ -67,5 +72,88 @@
     </div>
   </div>
 </div>
+
+<script>
+  document.getElementById("increase-quantity").addEventListener("click", function() {
+    var quantityInput = document.getElementById("quantity-input");
+    var currentQuantity = parseInt(quantityInput.value);
+    quantityInput.value = currentQuantity + 1;
+  });
+
+  document.getElementById("decrease-quantity").addEventListener("click", function() {
+    var quantityInput = document.getElementById("quantity-input");
+    var currentQuantity = parseInt(quantityInput.value);
+    if (currentQuantity > 0) {
+      quantityInput.value = currentQuantity - 1;
+    }
+  });
+
+  // Add to Cart button functionality
+  document.getElementById("increase-quantity").addEventListener("click", function() {
+    var quantityInput = document.getElementById("quantity-input");
+    var quantity = parseInt(quantityInput.value);
+    if (quantity === 0) {
+      quantity = 1; // If the quantity is 0, set it to 1 before adding to the cart.
+    }
+    
+    var productId = "{{ product.id }}";  // Get product ID from template
+
+    fetch("{% url 'update_cart_ajax' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: new URLSearchParams({
+        product_id: productId,
+        action: 'increase',  // Action is increase, since it's an "Add to Cart" operation
+        quantity: quantity
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        console.log("Product added to the cart.");
+      } else if (data.status === 'error' && data.message === 'Please login first.') {
+        alert("Please log in first.");
+        window.location.href = "{% url 'login' %}?next={{ request.path }}";  // Redirect to login page
+      }
+    });
+  });
+
+  // Remove from Cart button functionality
+  document.getElementById("decrease-quantity").addEventListener("click", function() {
+    var quantityInput = document.getElementById("quantity-input");
+    var quantity = parseInt(quantityInput.value);
+    if (quantity === 0) {
+      alert("No item in cart to remove.");
+      return;
+    }
+
+    var productId = "{{ product.id }}";  // Get product ID from template
+
+    fetch("{% url 'update_cart_ajax' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: new URLSearchParams({
+        product_id: productId,
+        action: 'decrease',  // Action is decrease, since it's a "Remove from Cart" operation
+        quantity: quantity
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        console.log("Product removed from the cart.");
+      } else if (data.status === 'error' && data.message === 'Please login first.') {
+        alert("Please log in first.");
+        window.location.href = "{% url 'login' %}?next={{ request.path }}";  // Redirect to login page
+      }
+    });
+  });
+</script>
 
 {% endblock %}

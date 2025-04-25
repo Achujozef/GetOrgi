@@ -33,9 +33,13 @@ def landing_page(request):
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
     similar_products = Product.objects.filter(category=product.category).exclude(pk=pk)[:10]
+    cart_item = None
+    if request.user.is_authenticated:
+        cart_item = CartItem.objects.filter(user=request.user, product=product).first()
     return render(request, 'product_detail.html', {
         'product': product,
         'similar_products': similar_products,
+        'cart_item':cart_item
     })
 
 def cart_view(request):
@@ -68,7 +72,12 @@ def cart_view(request):
 
 
 def update_cart(request):
+    if 'mobile' not in request.session:
+        messages.error(request, "Please login first.")
+        return redirect('login')
+    
     if request.method == "POST":
+        print("Postil kerunnu")
         cart_item_id = request.POST.get('cart_item_id')
         action = request.POST.get('action')
 
@@ -101,7 +110,7 @@ def login_view(request):
         request.session['mobile'] = user.mobile  
 
         messages.success(request, f"Welcome, {mobile}! Continue shopping.")
-        return redirect('cart')
+        return redirect('/')
 
     return render(request, 'login.html')
 
@@ -158,6 +167,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum
 @csrf_exempt
 def update_cart_ajax(request):
+    if 'mobile' not in request.session:
+        messages.error(request, "Please login first.")
+        return JsonResponse({'status': 'error', 'message': 'Please login first.', 'redirect': 'login'})
     if request.method == "POST" and "mobile" in request.session:
         product_id = request.POST.get("product_id")
         action = request.POST.get("action")
