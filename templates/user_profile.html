@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .table th, .table td {
+        padding: 10px;
+        text-align: left;
+    }
+    
+    .modal-body h5 {
+        margin-top: 20px;
+    }
+</style>
+<div class="container">
+    <!-- Orders Section -->
+    <div class="orders-section mt-4">
+        <h2>Your Orders</h2>
+        {% if orders %}
+            <div class="list-group">
+                {% for order in orders %}
+                    <div class="list-group-item">
+                        <h5>Order #{{ order.id }}</h5>
+                        <p><strong>Order Date:</strong> {{ order.created_at }}</p>
+                        <p><strong>Total:</strong> ₹{{ order.total_amount }}</p>
+                        <p><strong>Status:</strong> {% if order.is_paid %} Paid {% else %} Pending {% endif %}</p>
+                        <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#orderDetailsModal{{ order.id }}">View Details</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No orders found.</p>
+        {% endif %}
+    </div>
+
+    <!-- Address Section -->
+    <div class="address-section mt-4">
+        <h2>Your Addresses</h2>
+        {% if addresses %}
+            <div class="list-group">
+                {% for address in addresses %}
+                    <div class="list-group-item">
+                        <h5>{{ address.customer_name }}</h5>
+                        <p><strong>Address:</strong> {{ address.full_address }}</p>
+                        <p><strong>City:</strong> {{ address.city }}</p>
+                        <p><strong>Pincode:</strong> {{ address.pincode }}</p>
+                        <p><strong>Phone:</strong> {{ address.phone }}</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editAddressModal{{ address.id }}">Edit</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No addresses found.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Address Edit Modal -->
+{% for address in addresses %}
+<div class="modal fade" id="editAddressModal{{ address.id }}" tabindex="-1" aria-labelledby="editAddressModalLabel{{ address.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAddressModalLabel{{ address.id }}">Edit Address</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'edit_address_for_user_profile' address.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="customer_name" class="form-label">Customer Name</label>
+                        <input type="text" class="form-control" id="customer_name" name="customer_name" value="{{ address.customer_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="full_address" class="form-label">Full Address</label>
+                        <textarea class="form-control" id="full_address" name="full_address" rows="3" required>{{ address.full_address }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="city" class="form-label">City</label>
+                        <input type="text" class="form-control" id="city" name="city" value="{{ address.city }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pincode" class="form-label">Pincode</label>
+                        <input type="number" class="form-control" id="pincode" name="pincode" value="{{ address.pincode }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone</label>
+                        <input type="text" class="form-control" id="phone" name="phone" value="{{ address.phone }}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
