@@ -17,6 +17,14 @@ urlpatterns = [
     path('verify-payment/', views.verify_payment, name='verify_payment'),
     path('set-selected-address/', views.set_selected_address, name='set_selected_address'),
     path('order-summary/', views.order_summary, name='order_summary'),
-
-
+    path('submit-review/', views.submit_review, name='submit_review'),
+    path('edit-address/', views.edit_address, name='edit_address'),
+    path('contact-us/', views.contact_us, name='contact_us'),
+    path('about-us/', views.about_us, name='about_us'),
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+    path('terms-conditions/', views.terms_conditions, name='terms_conditions'),
+    path('return-policy/', views.return_policy, name='return_policy'),
+    path('profile/', views.user_profile, name='user_profile'),
+    path('edit-address/<int:address_id>/', views.edit_address_for_user_profile, name='edit_address_for_user_profile'),
+    
 ]

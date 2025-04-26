@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}About Us | GetOrgi - Fresh Organic & Homemade Goodness{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="text-success fw-bold mb-4">Welcome to the GetOrgi Family</h1>
+            <p class="lead mb-4">
+                At <strong>GetOrgi</strong>, we are not just an online store — we are a community, a family, and a movement toward healthier living. 
+                Our mission is simple: to connect you with authentic, organic, and lovingly homemade products, sourced locally from the passionate hearts of Kerala.
+            </p>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <!-- Story Section -->
+        <div class="col-md-6">
+            <h4 class="text-success mb-3">Our Story 🌱</h4>
+            <p>
+                Founded by <strong>Achu Joseph S L</strong> in Thiruvananthapuram (TVM), Kerala, GetOrgi was born from a simple but powerful idea: 
+                to celebrate and support the hardworking local producers who believe in purity, passion, and sustainability. 
+                We recognized the need for genuine, homemade goodness in a world full of artificial choices — and decided to create a trusted space for it.
+            </p>
+            <p>
+                Every item we offer is crafted or sourced with care, ensuring that when you shop with us, you are bringing home something real, fresh, and nourishing.
+            </p>
+        </div>
+
+        <!-- What We Offer -->
+        <div class="col-md-6">
+            <h4 class="text-success mb-3">What We Offer 🌾</h4>
+            <ul class="list-unstyled fs-5">
+                <li class="mb-2"><i class="fas fa-seedling text-success me-2"></i> 100% Original, Organic, and Homemade Products</li>
+                <li class="mb-2"><i class="fas fa-people-carry text-success me-2"></i> Directly Sourced from Passionate Local Producers</li>
+                <li class="mb-2"><i class="fas fa-truck text-success me-2"></i> Fast Delivery Across Kerala (Within 3-4 Days)</li>
+                <li class="mb-2"><i class="fas fa-heart text-success me-2"></i> Family-Focused Values and a Healthy Lifestyle Mission</li>
+                <li class="mb-2"><i class="fas fa-hand-holding-heart text-success me-2"></i> Growing Startup Powered by Your Trust and Blessings</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-lg-10 mx-auto text-center">
+            <h4 class="text-success mb-3">Our Commitment to You 💚</h4>
+            <p class="fs-5">
+                We are committed to offering only the purest, freshest, and most authentic products — 
+                because we believe that your family deserves nothing less. Your health and happiness are at the heart of everything we do.
+            </p>
+            <p class="fs-5">
+                When you choose GetOrgi, you are not just shopping — you are supporting a vision, 
+                empowering local communities, and becoming part of a healthier tomorrow.
+            </p>
+            <p class="fs-5">
+                Thank you for being part of our journey. Your love, support, and blessings are the true strength behind GetOrgi. 
+                Together, let's build a lifestyle rooted in health, family, and authenticity.
+            </p>
+
+            <a href="{% url 'landing' %}" class="btn btn-success btn-lg mt-4">Shop Now</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

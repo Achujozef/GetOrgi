@@ -1,5 +1,3 @@
-<!-- templates/core/landing.html -->
-
 {% extends 'base.html' %}
 {% load dict_filters %}
 {% block title %}Home{% endblock %}
@@ -8,51 +6,103 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
+    .banner-img {
+        max-height: 400px;
+        object-fit: cover;
+        border-radius: 0 0 20px 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .category-button {
+        transition: all 0.3s;
+    }
+    .category-button:hover {
+        background-color: #198754;
+        color: white;
+        transform: scale(1.05);
+    }
+    .product-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    .quantity-controls button {
+        min-width: 32px;
+    }
+    .quantity-box {
+        width: 50px;
+        border-radius: 8px;
+    }
+    h2.section-title {
+        font-weight: bold;
+        margin-bottom: 30px;
+        position: relative;
+        display: inline-block;
+    }
+    h2.section-title::after {
+        content: '';
+        width: 50%;
+        height: 3px;
+        background: #198754;
+        position: absolute;
+        bottom: -8px;
+        left: 25%;
+    }
+</style>
+
 <!-- Banner -->
-<div class="container-fluid px-0">
-    <img src="/static/image1.jpg" class="img-fluid w-100" alt="Banner" style="max-height: 350px; object-fit: cover;">
+<div class="container-fluid px-0 mb-5">
+    <img src="/static/image2.jpg" class="img-fluid w-100 banner-img" alt="Banner">
 </div>
 
 <!-- Categories -->
-<div class="container my-5">
-    <h2 class="text-success text-center">Shop by Category</h2>
-    <div id="category-buttons" class="d-flex flex-wrap justify-content-center mt-3 gap-2">
-        <button class="btn btn-outline-success active" onclick="filterCategory('all', this)">
+<div class="container mb-5">
+    {% comment %} <h2 class="text-success text-center section-title">Shop by Category</h2> {% endcomment %}
+    <div id="category-buttons" class="d-flex flex-wrap justify-content-center mt-4 gap-2">
+        <button class="btn btn-outline-success active category-button" onclick="filterCategory('all', this)">
             All
         </button>
         {% for category in categories %}
-        <button class="btn btn-outline-success {% if forloop.first %}active{% endif %}" onclick="filterCategory('{{ category.id }}', this)">
+        <button class="btn btn-outline-success category-button" onclick="filterCategory('{{ category.id }}', this)">
             {{ category.name }}
         </button>
         {% endfor %}
     </div>
 </div>
 
-<div class="container mb-5">
+<!-- Products -->
+<div class="container">
     <div class="row gy-4" id="product-list">
         {% for product in products %}
-        <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
             <div class="card h-100 shadow-sm product-card" data-category="{{ product.category.id }}">
                 
-                <!-- Clickable Link Area -->
+                <!-- Product Link Area -->
                 <a href="{% url 'product_detail' product.pk %}" class="text-decoration-none text-dark product-link" style="display: block;">
                     {% if product.image %}
-                        <img src="{{ product.image.url }}" class="card-img-top img-fluid" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                        <img src="{{ product.image.url }}" class="card-img-top img-fluid" alt="{{ product.name }}" style="height: 220px; object-fit: cover;">
                     {% endif %}
                     <div class="card-body text-center">
-                        <h5 class="card-title">{{ product.name }}</h5>
-                        <p class="card-text text-success">₹{{ product.price }}</p>
+                        <h5 class="card-title mb-2">{{ product.name }}</h5>
+                        <p class="card-text text-success fw-bold mb-0">₹{{ product.price }}</p>
                     </div>
                 </a>
 
-                <!-- Quantity Controls (Non-clickable zone) -->
-                <div class="card-body text-center">
-                    <div class="d-flex justify-content-center align-items-center mt-2">
+                <!-- Quantity Controls -->
+                <div class="card-body pt-0 pb-3 text-center">
+                    <div class="d-flex justify-content-center align-items-center quantity-controls">
                         <button class="btn btn-sm btn-outline-success prevent-click">-</button>
-                        <input type="text" value="{{ cart_quantities|get_item:product.id|default:'0' }}"
+                        <input type="text" value="{{ cart_quantities|get_item:product.id|default:'0' }}" 
                         class="form-control form-control-sm text-center mx-2 prevent-click quantity-box" 
-                        style="width: 50px;" data-product-id="{{ product.id }}">
-                 
+                        data-product-id="{{ product.id }}">
                         <button class="btn btn-sm btn-outline-success prevent-click">+</button>
                     </div>
                 </div>
@@ -62,12 +112,9 @@
         {% endfor %}
     </div>
 </div>
+
 <!-- Optional Footer -->
-<footer class="bg-success text-white text-center py-3 w-100">
-    <div class="container">
-        <p class="mb-0">&copy; 2025 Organic Shop. All rights reserved.</p>
-    </div>
-</footer>
+<!-- (You can add a sexy footer later if you want) -->
 
 <script>
     function filterCategory(categoryId, buttonEl) {
@@ -83,7 +130,7 @@
         });
     }
     
-    // Prevent navigation when clicking on quantity buttons/inputs
+    // Prevent navigation when clicking quantity controls
     document.querySelectorAll('.prevent-click').forEach(el => {
         el.addEventListener('click', e => {
             e.stopPropagation();
@@ -93,12 +140,11 @@
     document.querySelectorAll('.product-link').forEach(link => {
         link.addEventListener('click', e => {
             if (e.target.classList.contains('prevent-click')) {
-                e.preventDefault(); // Don't follow link from inside quantity controls
+                e.preventDefault();
             }
         });
     });
-</script>
-<script>
+
     function updateCart(productId, action, inputBox) {
         fetch("{% url 'update_cart_ajax' %}", {
             method: "POST",
@@ -117,28 +163,28 @@
                 inputBox.value = data.new_quantity;
                 document.getElementById('cart-count').innerText = data.cart_count;
             } else if (data.status === 'error' && data.redirect === 'login') {
-                // Redirect to login page if the user is not logged in
-                window.location.href = "/login";  // Change '/login' to the correct login URL if necessary
+                window.location.href = "/login";
             }
         });
     }
-    
+
     document.querySelectorAll('.product-card').forEach(card => {
         const productId = card.querySelector('.quantity-box').dataset.productId;
         const inputBox = card.querySelector('.quantity-box');
         const minusBtn = card.querySelectorAll('.btn-outline-success')[0];
         const plusBtn = card.querySelectorAll('.btn-outline-success')[1];
-    
+
         plusBtn.addEventListener('click', function () {
             updateCart(productId, 'increase', inputBox);
         });
-    
+
         minusBtn.addEventListener('click', function () {
             if (parseInt(inputBox.value) > 0) {
                 updateCart(productId, 'decrease', inputBox);
             }
         });
     });
-    </script>
-    
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 {% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Contact Us | GetOrgi - Organic & Homemade Products{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="text-success fw-bold mb-3">Let's Connect!</h1>
+            <p class="lead mb-4">
+                Have a question about our organic products? Need help with your order? Or just want to say hello? 
+                We're always happy to hear from our GetOrgi family!
+            </p>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <!-- Contact Details -->
+        <div class="col-md-6">
+            <h4 class="text-success mb-3">Contact Information</h4>
+            <ul class="list-unstyled fs-5">
+                <li class="mb-2">
+                    <i class="fas fa-phone-alt text-success me-2"></i>
+                    <a href="tel:+916282954359" class="text-decoration-none text-dark">+91 6282 954 359</a> (WhatsApp Available)
+                </li>
+                <li class="mb-2">
+                    <i class="fas fa-envelope text-success me-2"></i>
+                    <a href="mailto:getorgifresh@gmail.com" class="text-decoration-none text-dark">getorgifresh@gmail.com</a>
+                </li>
+                <li class="mb-2">
+                    <i class="fab fa-facebook text-success me-2"></i>
+                    <a href="https://www.facebook.com/people/Get-Orgi/100083603130941/" target="_blank" class="text-decoration-none text-dark">
+                        Follow us on Facebook
+                    </a>
+                </li>
+                <li class="mb-2">
+                    <i class="fas fa-map-marker-alt text-success me-2"></i> 
+                    Based in Thiruvananthapuram (TVM), Kerala
+                </li>
+            </ul>
+            <p class="mt-4">🌱 Delivery available across Kerala within 3-4 days!</p>
+            <p>💚 We treat every customer like family. Thank you for trusting our growing startup. Your support and blessings are priceless!</p>
+        </div>
+
+        <!-- Contact Form (Optional Future Idea) -->
+        <div class="col-md-6">
+            <h4 class="text-success mb-3">Send Us a Message</h4>
+            <form>
+                <div class="mb-3">
+                    <input type="text" class="form-control" placeholder="Your Name" required>
+                </div>
+                <div class="mb-3">
+                    <input type="email" class="form-control" placeholder="Your Email" required>
+                </div>
+                <div class="mb-3">
+                    <input type="text" class="form-control" placeholder="Subject" required>
+                </div>
+                <div class="mb-3">
+                    <textarea class="form-control" rows="5" placeholder="Your Message" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Send Message</button>
+            </form>
+            <p class="small mt-2 text-muted">*Our team typically responds within 24 hours.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -22,6 +22,7 @@ class Product(models.Model):
     
 class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey('OrgiUser', on_delete=models.CASCADE, related_name='user_reviews', null=True, blank=True)
     name = models.CharField(max_length=100)
     comment = models.TextField()
     rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
@@ -81,6 +82,8 @@ class Address(models.Model):
     longitude = models.FloatField(null=True, blank=True)
     full_address = models.TextField()
     customer_name = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    pincode = models.PositiveIntegerField(default=1)
     Landmark = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=10, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

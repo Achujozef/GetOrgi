@@ -1,52 +1,275 @@
-
-{% comment %} {% load dict_filters %} {% endcomment %}
-<!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}E-Commerce{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="GetOrgi - Your one-stop shop for organic and quality products.">
+    <meta name="keywords" content="GetOrgi, Organic, E-commerce, Shop Online, Natural Products">
+    <meta name="author" content="GetOrgi">
+    <title>{% block title %}GetOrgi | E-Commerce{% endblock %}</title>
+
+    <!-- Bootstrap 5 CSS (Only use one version) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome for Cart Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* Global Styles */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            {% comment %} background-color:rgb(13, 77, 141); {% endcomment %}
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex: 1;
+            position: relative;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: #198754;
+            transition: all 0.3s ease-in-out;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: 0.5px;
+        }
+        .navbar-nav .nav-link {
+            color: white;
+            font-weight: 500;
+            margin-left: 15px;
+            transition: color 0.3s;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #ffc107;
+        }
+        .navbar-toggler {
+            border: none;
+        }
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+
+        /* Sticky Cart Icon */
+          .cart-icon {
+              position: fixed;
+              bottom: 20px; /* <-- Changed from 80px to 20px */
+              right: 20px;
+              background-color: #198754;
+              color: white;
+              padding: 15px;
+              border-radius: 50%;
+              font-size: 24px;
+              z-index: 1050;
+              box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+              text-align: center;
+              cursor: pointer;
+          }
+
+        .cart-icon:hover {
+            background-color: #157347;
+        }
+        .cart-icon #cart-count {
+            font-size: 12px;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: red;
+            border-radius: 50%;
+            padding: 2px 5px;
+        }
+
+        {% comment %} /* Sticky WhatsApp Icon */
+        .whatsapp-icon {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: #25d366;
+            color: white;
+            padding: 15px;
+            border-radius: 50%;
+            font-size: 24px;
+            z-index: 1050;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            text-align: center;
+            cursor: pointer;
+        }
+        .whatsapp-icon:hover {
+            background-color: #128c7e;
+        } {% endcomment %}
+        /* WhatsApp Icon */
+        .whatsapp-icon {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: #25d366;
+            color: white;
+            padding: 15px;
+            border-radius: 50%;
+            font-size: 24px;
+            z-index: 1050;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            text-align: center;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: row; /* Make it horizontal with icon and message */
+        }
+        
+        /* WhatsApp Icon Hover Effect */
+        .whatsapp-icon:hover {
+            background-color: #128c7e;
+        }
+        
+        /* Message Bubble on the Right Side */
+        .whatsapp-text {
+            display: block;
+            position: absolute;
+            left: 100%; /* Position it to the right of the icon */
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #25d366;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            max-width: 180px;
+            text-align: center;
+            white-space: nowrap;
+            margin-left: 10px; /* Space between bubble and icon */
+            z-index: 1051;
+        }
+        
+        /* Optional: Make sure the bubble is visible when screen is small */
+        @media (max-width: 768px) {
+            .whatsapp-text {
+                max-width: 150px;
+            }
+        }
+        
+        /* Footer Styling */
+        footer {
+            background-color: #198754;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            font-size: 1rem;
+        }
+
+        footer a {
+            color:rgb(20, 16, 3);
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        {% comment %} <h1>🛍️ My E-Commerce Site</h1> {% endcomment %}
-    </header>
+    <header></header>
     
     <main>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-success w-100">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg sticky-top shadow-sm">
             <div class="container">
-              <a class="navbar-brand" href="#">Organic Shop</a>
-              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+              <a class="navbar-brand" href="/">GetOrgi</a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
               <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                  <li class="nav-item"><a class="nav-link text-white" href="#">Home</a></li>
-                  <li class="nav-item"><a class="nav-link text-white" href="#">Shop</a></li>
-                  <li class="nav-item"><a class="nav-link text-white" href="#">Contact</a></li>
+                <ul class="navbar-nav ms-auto align-items-center">
+                  <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/">Shop</a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'cart' %}" class="nav-link cart-icon-navbar">
+                      My Cart <i class="fa fa-shopping-cart"></i>
+                      <span id="cart-count">{{ cart_count }}</span>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'contact_us' %}">Contact</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'about_us' %}">About Us</a>
+                  </li>
+
+                  <!-- Dropdown Menu for Policies -->
+                  <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      Policies
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                      <li><a class="dropdown-item" href="{% url 'privacy_policy' %}">Privacy Policy</a></li>
+                      <li><a class="dropdown-item" href="{% url 'terms_conditions' %}">Terms & Conditions</a></li>
+                      <li><a class="dropdown-item" href="{% url 'return_policy' %}">Return Policy</a></li>
+                    </ul>
+                  </li>
+                  {% if request.session.mobile %}
+                  <li class="nav-item">
+                      <a class="nav-link" href="{% url 'user_profile' %}">My Profile</a>
+                  </li>
+                  {% endif %}
                 </ul>
               </div>
             </div>
-          </nav>
+        </nav>
+
         {% block content %}
         {% endblock %}
-        <a href="{% url 'cart' %}">
-          <button class="btn btn-success rounded-pill px-4 py-2">
-            Cart (<span id="cart-count">{{ cart_count }}</span>)
-          </button>
+
+        <!-- Sticky Cart Icon -->
+        <a href="{% url 'cart' %}" class="cart-icon">
+            <i class="fa fa-shopping-cart"></i>
+            <span id="cart-count">{{ cart_count }}</span>
+        </a>
+
+        <!-- Sticky WhatsApp Icon -->
+        <a href="https://wa.me/916282954359" class="whatsapp-icon" target="_blank">
+          <i class="fab fa-whatsapp" aria-hidden="true"></i>
+          <div class="whatsapp-text">
+            <span>Hi!</span>
+          </div>
         </a>
         
-      
     </main>
 
+    <!-- Footer -->
     <footer>
-        <p>&copy; 2025 My Store</p>
+        <div class="container">
+            <p class="mb-0">&copy; 2025 <strong>GetOrgi</strong>. All rights reserved.</p>
+            <p>We are a growing startup offering organic, locally sourced, and homemade products. Your support and blessings are invaluable to us!</p>
+            <p>Contact us: <a href="mailto:getorgifresh@gmail.com">getorgifresh@gmail.com</a> | Call us: <a href="tel:+916282954359">+91 6282 954 359</a></p>
+            <p>Follow us on <a href="https://www.facebook.com/people/Get-Orgi/100083603130941/">Facebook</a></p>
+        </div>
     </footer>
-    <!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<!-- Bootstrap Bundle with Popper.js (required for modals) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+          // Initialize Bootstrap dropdowns
+          const dropdowns = document.querySelectorAll('.dropdown-toggle');
+          dropdowns.forEach(dropdown => {
+              new bootstrap.Dropdown(dropdown);
+          });
+      });
+  </script>
+  
+    <!-- Bootstrap JS (including Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

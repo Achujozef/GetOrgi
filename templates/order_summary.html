@@ -2,31 +2,84 @@
 {% block title %}Order Summary{% endblock %}
 {% block content %}
 <div class="container my-5">
-    <h3 class="mb-4 text-success text-center">Order Summary</h3>
-    <table class="table">
-        <thead>
-            <tr><th>Product</th><th>Qty</th><th>Subtotal</th></tr>
-        </thead>
-        <tbody>
-            {% for item in cart_items %}
-            <tr>
-                <td>{{ item.product.name }}</td>
-                <td>{{ item.quantity }}</td>
-                <td>₹{{ item.subtotal }}</td>
-            </tr>
-            {% endfor %}
-            <tr>
-                <td colspan="2"><strong>Delivery Charge</strong></td>
-                <td>₹{{ delivery }}</td>
-            </tr>
-            <tr>
-                <td colspan="2"><strong>Total</strong></td>
-                <td><strong>₹{{ grand_total }}</strong></td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="card shadow p-4" style="border-radius: 15px;">
+        <div class="text-center mb-4">
+            <h2 class="text-success">GetOrgi</h2>
+            <p class="mb-0">Organic, Locally Sourced & Homemade Goodness</p>
+            <small>www.getorgi.shop | +91 6282 954 359</small>
+        </div>
 
-    <button id="rzp-button1" class="btn btn-success w-100">Pay and Place Order</button>
+        <hr>
+
+        <h4 class="mb-3 text-success">Order Summary</h4>
+
+        {% if selected_address %}
+        <div class="mb-4">
+            <h5 class="text-success">Shipping Address</h5>
+            <p>
+                {{ selected_address.customer_name }}<br>
+                {{ selected_address.full_address }}<br>
+                {{ selected_address.city }} - {{ selected_address.pincode }}<br>
+                Phone: {{ selected_address.phone }}
+            </p>
+        </div>
+        {% endif %}
+
+        <table class="table table-bordered">
+            <thead class="table-success">
+                <tr>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>₹{{ item.subtotal }}</td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="2" class="text-end"><strong>Delivery Charge</strong></td>
+                    <td>₹{{ delivery }}</td>
+                </tr>
+                <tr class="table-success">
+                    <td colspan="2" class="text-end"><strong>Grand Total</strong></td>
+                    <td><strong>₹{{ grand_total }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="my-4 text-center">
+            <button id="rzp-button1" class="btn btn-success w-50">Pay & Place Order</button>
+        </div>
+
+        <hr>
+
+        <div class="mt-4">
+            <h5 class="text-success">Important Notes</h5>
+            <ul>
+                <li>✅ We are fully responsible for delivery and product quality.</li>
+                <li>✅ 100% cashback guarantee if products are damaged or spoiled during delivery.</li>
+                <li>✅ Quick customer support available via WhatsApp or Email.</li>
+                <li>✅ Freshness and quality are our top priorities.</li>
+            </ul>
+
+            <p class="mt-3">
+                <strong>Thank you for trusting GetOrgi!</strong> 🌱 <br>
+                We are happy to have you in our family. Together, let's build a healthier tomorrow.
+            </p>
+        </div>
+
+        <hr>
+
+        <div class="text-center text-muted small">
+            <p>For any support, contact us: <br> +91 6282 954 359 | getorgifresh@gmail.com</p>
+            <p>Follow us on <a href="https://www.facebook.com/people/Get-Orgi/100083603130941/" target="_blank">Facebook</a></p>
+        </div>
+    </div>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>

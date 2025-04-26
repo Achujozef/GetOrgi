@@ -3,7 +3,18 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from .models import Category, Product, OrgiUser, CartItem, Delivery,Address,Order, OrderItem
+from .models import Category, Product, OrgiUser, CartItem, Delivery,Address,Order, OrderItem, Review
+import razorpay
+from django.conf import settings
+from .models import Address
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Sum
+from django.shortcuts import redirect
+from django.contrib import messages
+import json
+from django.db.models import Avg
+from django.http import Http404
+from django.core.paginator import Paginator
 
 def landing_page(request):
     categories = Category.objects.all()
@@ -15,7 +26,7 @@ def landing_page(request):
         user = OrgiUser.objects.get(mobile=request.session["mobile"])
         cart_items = CartItem.objects.filter(user=user)
         cart_quantities = {item.product.id: item.quantity for item in cart_items}
-        print("cart_quantities",cart_quantities)
+        # print("cart_quantities",cart_quantities)
         cart_count = cart_items.count()
     else:
         print("User Not Found")
@@ -33,13 +44,27 @@ def landing_page(request):
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
     similar_products = Product.objects.filter(category=product.category).exclude(pk=pk)[:10]
+    user_mobile = request.session["mobile"]
+    user = OrgiUser.objects.get(mobile=user_mobile)
     cart_item = None
-    if request.user.is_authenticated:
-        cart_item = CartItem.objects.filter(user=request.user, product=product).first()
+    cart_count = 0
+    purchased = False
+    already_reviewed = False
+
+    if "mobile" in request.session:
+        cart_item = CartItem.objects.filter(user=user, product=product).first()
+        cart_items = CartItem.objects.filter(user=user)
+        cart_count = cart_items.count()
+        purchased = OrderItem.objects.filter(order__user=user, product=product, order__is_paid=True).exists()
+        already_reviewed = Review.objects.filter(user=user, product=product).exists()
+        # print("already_reviewed, purchased :",already_reviewed, purchased)
     return render(request, 'product_detail.html', {
         'product': product,
         'similar_products': similar_products,
-        'cart_item':cart_item
+        'cart_item':cart_item,
+        'cart_count':cart_count,
+        'purchased': purchased,
+        'already_reviewed': already_reviewed,
     })
 
 def cart_view(request):
@@ -59,12 +84,14 @@ def cart_view(request):
 
 
         final_total = total + delivery_charge
-
+        cart_items = CartItem.objects.filter(user=user)
+        cart_count = cart_items.count()
         return render(request, 'cart.html', {
             'cart_items': cart_items,
             'total': total,
             'delivery_charge': delivery_charge,
-            'final_total': final_total
+            'final_total': final_total,
+            'cart_count':cart_count
         })
     else:
         messages.error(request, "Please login with your mobile number to continue shopping.")
@@ -77,7 +104,7 @@ def update_cart(request):
         return redirect('login')
     
     if request.method == "POST":
-        print("Postil kerunnu")
+        # print("Postil kerunnu")
         cart_item_id = request.POST.get('cart_item_id')
         action = request.POST.get('action')
 
@@ -125,15 +152,16 @@ def address_list_view(request):
         return redirect('login')
 
     user = OrgiUser.objects.get(mobile=request.session['mobile'])
-
+    cart_items = CartItem.objects.filter(user=user)
+    cart_count = cart_items.count()
     # Fetch the user's addresses
     addresses = Address.objects.filter(user=user)
 
     # If no address exists, show a message and allow the user to add a new one
     if not addresses:
-        return render(request, 'address_list.html', {'addresses': addresses, 'no_addresses': True})
+        return render(request, 'address_list.html', {'addresses': addresses, 'no_addresses': True, 'cart_count' : cart_count})
 
-    return render(request, 'address_list.html', {'addresses': addresses})
+    return render(request, 'address_list.html', {'addresses': addresses, 'cart_count' : cart_count})
 
 def save_address(request):
     if 'mobile' not in request.session:
@@ -150,7 +178,9 @@ def save_address(request):
             full_address=request.POST.get('full_address'),
             customer_name=request.POST.get('customer_name'),
             Landmark = request.POST.get('landmark', ''),
-            phone=request.POST.get('phone')
+            phone=request.POST.get('phone'),
+            city = request.POST.get('city'),
+            pincode = request.POST.get('pincode')
         )
         messages.success(request, "Address saved!")
         return redirect('address_list')  # or wherever you want to redirect
@@ -161,10 +191,31 @@ def address_detail(request, address_id):
     address = get_object_or_404(Address, id=address_id)
     return render(request, 'address_detail.html', {'address': address})
 
+def edit_address(request):
+    if 'mobile' not in request.session:
+        messages.error(request, "Please login first.")
+        return redirect('login')
+
+    user = OrgiUser.objects.get(mobile=request.session['mobile'])
+
+    if request.method == 'POST':
+        address_id = request.POST.get('address_id')
+        address = get_object_or_404(Address, id=address_id, user=user)
+
+        address.customer_name = request.POST.get('customer_name')
+        address.full_address = request.POST.get('full_address')
+        address.Landmark = request.POST.get('landmark', '')
+        address.phone = request.POST.get('phone')
+        address.city = request.POST.get('city')
+        address.pincode = request.POST.get('pincode')
+        address.save()
+
+        messages.success(request, "Address updated successfully!")
+        return redirect('address_list')
+
+    return redirect('address_list')
 
 
-from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Sum
 @csrf_exempt
 def update_cart_ajax(request):
     if 'mobile' not in request.session:
@@ -229,7 +280,7 @@ def place_order_from_cart(request):
 
     total = sum(item.product.price * item.quantity for item in cart_items)
 
-    order = Order.objects.create(user=user, address=address, total_amount=total)
+    order = Order.objects.create(user=user, address=address, total_amount=total,is_paid=True)
 
     for item in cart_items:
         OrderItem.objects.create(
@@ -238,51 +289,54 @@ def place_order_from_cart(request):
             quantity=item.quantity,
             price=item.product.price
         )
+        item.product.purchase_count += item.quantity
+        item.product.save()
 
     cart_items.delete()
 
     return render(request, 'order_success.html', {'order': order})
 
-@login_required
 def buy_now(request, product_id):
-    user = request.user
-    product = Product.objects.get(id=product_id)
-    address = Address.objects.filter(user=user).first()
+    if "mobile" not in request.session:
+        return redirect("login")
 
-    order = Order.objects.create(user=user, address=address, total_amount=product.price)
+    request.session["buy_now_product_id"] = product_id
+    request.session["order_mode"] = "buy_now"  # this flag helps distinguish
+    return redirect("address_list")
 
-    OrderItem.objects.create(
-        order=order,
-        product=product,
-        quantity=1,
-        price=product.price
-    )
 
-    return render(request, 'order_success.html', {'order': order})
-
-import razorpay
-from django.conf import settings
-
-from .models import Address
 
 def order_summary(request):
     user = OrgiUser.objects.get(mobile=request.session["mobile"])
-    cart_items = CartItem.objects.filter(user=user)
     delivery_charge = Delivery.objects.first().charge if Delivery.objects.exists() else 0
-    total = sum([item.subtotal() for item in cart_items])
-    grand_total = total + delivery_charge
-
     selected_address_id = request.session.get("selected_address_id")
     selected_address = Address.objects.get(id=selected_address_id) if selected_address_id else None
 
-    # Razorpay order setup
+    if request.session.get("order_mode") == "buy_now":
+        product_id = request.session.get("buy_now_product_id")
+        product = get_object_or_404(Product, id=product_id)
+        quantity = 1
+        total = product.price * quantity
+        cart_items = [{
+            'product': product,
+            'quantity': quantity,
+            'subtotal': total
+        }]
+    else:
+        cart_items = CartItem.objects.filter(user=user)
+        total = sum([item.subtotal() for item in cart_items])
+
+    grand_total = total + delivery_charge
+
+    # Razorpay
     client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET_KEY))
     payment = client.order.create({
         "amount": int(grand_total * 100),
         "currency": "INR",
         "payment_capture": "1"
     })
-
+    cart_items_for_cart_icon = CartItem.objects.filter(user=user)
+    cart_count = cart_items_for_cart_icon.count()
     context = {
         "cart_items": cart_items,
         "total": total,
@@ -291,10 +345,12 @@ def order_summary(request):
         "razorpay_order_id": payment["id"],
         "razorpay_key": settings.RAZORPAY_KEY_ID,
         "selected_address": selected_address,
+        "order_mode": request.session.get("order_mode"),
+        'cart_count' : cart_count
     }
     return render(request, "order_summary.html", context)
 
-import json
+
 def verify_payment(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -306,22 +362,167 @@ def verify_payment(request):
                 "razorpay_payment_id": data["razorpay_payment_id"],
                 "razorpay_signature": data["razorpay_signature"]
             })
-            # Create Order from cart items here
-            # Clear cart if needed
+            user = OrgiUser.objects.get(mobile=request.session["mobile"])
+            address = Address.objects.get(id=request.session["selected_address_id"])
+            order_mode = request.session.get("order_mode")
+
+            if order_mode == "buy_now":
+                product_id = request.session.get("buy_now_product_id")
+                product = Product.objects.get(id=product_id)
+                order = Order.objects.create(user=user, address=address, total_amount=product.price,is_paid=True)
+                OrderItem.objects.create(order=order, product=product, quantity=1, price=product.price)
+                product.purchase_count += 1
+                product.save()
+                # Clear session flags
+                del request.session["order_mode"]
+                del request.session["buy_now_product_id"]
+            else:
+                cart_items = CartItem.objects.filter(user=user)
+                total = sum(item.product.price * item.quantity for item in cart_items)
+                order = Order.objects.create(user=user, address=address, total_amount=total)
+                for item in cart_items:
+                    OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity, price=item.product.price)
+                    item.product.purchase_count += item.quantity
+                    item.product.save()
+                cart_items.delete()
+                del request.session["order_mode"]
+
             return JsonResponse({"status": "success"})
         except:
             return JsonResponse({"status": "failed"})
 
     return JsonResponse({"status": "invalid"})
 
-from django.shortcuts import redirect
-from django.contrib import messages
-from .models import Address
-
 def set_selected_address(request):
     if request.method == "POST":
         address_id = request.POST.get("address_id")
         request.session["selected_address_id"] = address_id
-        return redirect("order_summary")
+
+        if request.session.get("order_mode") == "buy_now":
+            return redirect("order_summary")  # redirect to single item summary
+        return redirect("order_summary")  # or cart-based summary
     messages.error(request, "Please select a valid address.")
     return redirect("address_list")
+
+@csrf_exempt
+def submit_review(request):
+    if request.method == "POST":
+        try:
+            user_mobile = request.session["mobile"]
+            user = OrgiUser.objects.get(mobile=user_mobile)
+            product_id = request.POST.get("product_id")
+            rating = int(request.POST.get("rating"))
+            comment = request.POST.get("comment")
+
+            product = Product.objects.get(id=product_id)
+
+            # Check if user already reviewed
+            existing_review = Review.objects.filter(user=user, product=product).first()
+            if existing_review:
+                return JsonResponse({'status': 'error', 'message': 'You have already submitted a review.'})
+
+            Review.objects.create(
+                product=product,
+                user=user,
+                name="GetOrgi User", 
+                comment=comment,
+                rating=rating,
+            )
+            average_rating = Review.objects.filter(product=product).aggregate(avg_rating=Avg('rating'))['avg_rating']
+            product.rating = round(average_rating, 2)  # keep 2 decimal places
+            product.save()
+            return JsonResponse({'status': 'success', 'message': 'Review submitted successfully.'})
+
+        except Exception as e:
+            print(e)
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request.'})
+
+def contact_us(request):
+    return render(request, 'contact_us.html')
+
+def about_us(request):
+    return render(request, 'about_us.html')
+
+def privacy_policy(request):
+    return render(request, 'privacy_policy.html')
+
+def terms_conditions(request):
+    return render(request, 'terms_conditions.html')
+
+def return_policy(request):
+    return render(request, 'return_policy.html')
+
+def user_profile(request):
+    if 'mobile' not in request.session:
+        messages.error(request, "Please login first.")
+        return redirect('login')
+
+    user = OrgiUser.objects.get(mobile=request.session['mobile'])
+
+    # Fetch user orders (latest first)
+    orders = Order.objects.filter(user=user).order_by('-created_at')
+
+    # Fetch user addresses
+    addresses = Address.objects.filter(user=user)
+
+    context = {
+        'orders': orders,
+        'addresses': addresses
+    }
+
+    return render(request, 'user_profile.html', context)
+
+def edit_address_for_user_profile(request, address_id):
+    # Fetch the address to edit
+    address = get_object_or_404(Address, id=address_id)
+
+    if request.method == 'POST':
+        # Update the address fields
+        address.customer_name = request.POST.get('customer_name')
+        address.full_address = request.POST.get('full_address')
+        address.city = request.POST.get('city')
+        address.pincode = request.POST.get('pincode')
+        address.phone = request.POST.get('phone')
+
+        # Save the changes to the database
+        address.save()
+
+        # Provide feedback to the user
+        messages.success(request, "Address updated successfully!")
+
+        # Redirect back to the user profile page
+        return redirect('user_profile')  # Replace with the correct URL name
+
+    return render(request, 'edit_address.html', {'address': address})
+
+def load_more_orders(request):
+    if 'mobile' not in request.session:
+        return JsonResponse({'error': 'Please login first.'}, status=400)
+
+    user = OrgiUser.objects.get(mobile=request.session['mobile'])
+    
+    # Fetch orders for the user
+    orders = Order.objects.filter(user=user).order_by('-created_at')
+    
+    # Pagination
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(orders, 10)  # 10 orders per page
+    page_obj = paginator.get_page(page_number)
+
+    # Prepare the response data
+    orders_data = []
+    for order in page_obj.object_list:
+        order_data = {
+            'id': order.id,
+            'created_at': order.created_at,
+            'total_amount': order.total_amount,
+            'is_paid': order.is_paid,
+        }
+        orders_data.append(order_data)
+
+    return JsonResponse({
+        'orders': orders_data,
+        'has_next': page_obj.has_next(),  # To check if there's more to load
+    })

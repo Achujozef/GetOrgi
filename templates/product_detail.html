@@ -5,156 +5,315 @@
 {% block content %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
-<div class="container my-5">
-  <div class="row">
-    <div class="col-md-6">
-      <img src="{{ product.image.url }}" class="img-fluid rounded shadow" alt="{{ product.name }}">
+<style>
+  .container-fixed {
+    width: 1200px;
+    margin: 40px auto;
+  }
+
+  .row-fixed {
+    display: flex;
+    gap: 40px;
+  }
+
+  .col-fixed {
+    flex: 1;
+  }
+
+  .product-image {
+    width: 100%;
+    height: 400px;
+    object-fit: contain;
+    background: #f8f9fa;
+    border-radius: 10px;
+  }
+
+  .quantity-controls button {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .quantity-controls input {
+    width: 60px;
+    height: 40px;
+    text-align: center;
+  }
+
+  .btn-premium {
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+  }
+
+  .similar-products .card {
+    width: 180px;
+  }
+
+  .similar-products-row {
+    display: flex;
+    gap: 20px;
+  }
+
+  /* --------- Mobile Styles --------- */
+  @media (max-width: 768px) {
+    .container-fixed {
+      width: 100%;
+      padding: 20px;
+      margin: 0 auto;
+    }
+
+    .row-fixed {
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .product-image {
+      height: auto;
+      max-height: none;
+      object-fit: contain;
+    }
+
+    .btn-premium {
+      font-size: 0.95rem;
+    }
+
+    .similar-products-row {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+    }
+  }
+</style>
+
+<div class="container-fixed">
+  <div class="row-fixed">
+    <!-- Product Image -->
+    <div class="col-fixed text-center">
+      <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image shadow-sm">
     </div>
-    <div class="col-md-6">
+
+    <!-- Product Details -->
+    <div class="col-fixed">
       <h2 class="text-success">{{ product.name }}</h2>
-      <p class="text-muted">{{ product.description }}</p>
-      <h4 class="text-success">₹{{ product.price }}</h4>
-      <p>Rating: ⭐ {{ product.rating }} / 5</p>
-      <p>Total Purchases: {{ product.purchase_count }}</p>
-      <p>Cart Quantity: {{ cart_item.quantity }}</p>
+      <p class="text-muted small">{{ product.description }}</p>
+      <h4 class="text-success mb-3">₹{{ product.price }}</h4>
 
-      <div class="d-flex align-items-center my-3">
-        <button class="btn btn-sm btn-outline-success" id="decrease-quantity">Remove from Cart</button>
-        {% if cart_item %}
-            <input type="text" value="{{ cart_item.quantity }}" class="form-control form-control-sm text-center mx-2" style="width: 60px;" id="quantity-input">
-        {% else %}
-            <input type="text" value="0" class="form-control form-control-sm text-center mx-2" style="width: 60px;" id="quantity-input">
-        {% endif %}
-
-        <button class="btn btn-sm btn-outline-success" id="increase-quantity">Add to Cart</button>
+      <div class="d-flex align-items-center mb-2">
+        <div class="me-2">⭐ {{ product.rating }} / 5</div> |
+        <div class="ms-2">{{ product.purchase_count }} purchased</div>
       </div>
 
-      <!-- Continue with Cart button -->
-      <div class="my-3">
-        <a href="{% url 'cart' %}" class="btn btn-outline-success">Continue with Cart</a>
+      <!-- Quantity Controls -->
+      <div class="d-flex align-items-center quantity-controls my-3">
+        <button class="btn btn-outline-success" id="decrease-quantity">-</button>
+        {% if cart_item %}
+          <input type="text" id="quantity-input" class="form-control mx-2" value="{{ cart_item.quantity }}">
+        {% else %}
+          <input type="text" id="quantity-input" class="form-control mx-2" value="0">
+        {% endif %}
+        <button class="btn btn-outline-success" id="increase-quantity">+</button>
+      </div>
+
+      <!-- Buttons -->
+      <div class="d-flex gap-2 mt-4">
+        <a href="{% url 'cart' %}" class="btn btn-outline-success btn-premium w-50">Continue with Cart</a>
+        <a href="{% url 'buy_now' product.id %}" class="btn btn-success btn-premium w-50">Buy Now</a>
       </div>
     </div>
   </div>
 
   <hr class="my-5">
 
+  <!-- Reviews Section -->
   <div class="reviews">
     <h4 class="text-success mb-4">Customer Reviews</h4>
+    {% if purchased and not already_reviewed %}
+    <!-- Add Your Opinion Button -->
+    <div class="mb-4">
+      <button class="btn btn-outline-success btn-premium" data-bs-toggle="modal" data-bs-target="#reviewModal">
+        Add Your Opinion About the Product
+      </button>
+    </div>
+  {% endif %}
     {% if product.reviews.all %}
       {% for review in product.reviews.all %}
         <div class="mb-3 p-3 border rounded">
-          <strong>{{ review.name }}</strong> <span class="text-muted">rated</span> ⭐ {{ review.rating }}/5
-          <p class="mb-0">{{ review.comment }}</p>
+          <strong>{{ review.name }}</strong> 
+          <small class="text-muted">⭐ {{ review.rating }}/5</small>
+          <p class="mb-0 mt-1">{{ review.comment }}</p>
         </div>
       {% endfor %}
     {% else %}
-      <p>No reviews yet.</p>
+      <p class="text-muted">No reviews yet.</p>
     {% endif %}
   </div>
 
   <hr class="my-5">
 
+  <!-- Similar Products Section -->
   <div class="similar-products">
     <h4 class="text-success mb-4">Similar Products</h4>
-    <div class="row row-cols-2 row-cols-md-5 g-3 flex-nowrap overflow-auto">
+    <div class="similar-products-row">
       {% for similar in similar_products %}
-      <div class="col">
-        <div class="card h-100">
-          <img src="{{ similar.image.url }}" class="card-img-top" style="height: 150px; object-fit: cover;">
-          <div class="card-body p-2 text-center">
-            <h6 class="card-title mb-1">{{ similar.name }}</h6>
-            <p class="text-success small">₹{{ similar.price }}</p>
-            <a href="{% url 'product_detail' similar.pk %}" class="btn btn-sm btn-outline-success">View</a>
-          </div>
+      <div class="card shadow-sm">
+        <img src="{{ similar.image.url }}" class="card-img-top" style="height: 120px; object-fit: cover;">
+        <div class="card-body p-2 text-center">
+          <h6 class="card-title small">{{ similar.name }}</h6>
+          <p class="text-success small mb-2">₹{{ similar.price }}</p>
+          <a href="{% url 'product_detail' similar.pk %}" class="btn btn-sm btn-outline-success btn-premium w-100">View</a>
         </div>
       </div>
       {% endfor %}
     </div>
   </div>
+  <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="review-form">
+          <div class="modal-header">
+            <h5 class="modal-title" id="reviewModalLabel">Write Your Review</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+  
+            <!-- Star Rating -->
+            <div class="mb-3">
+              <label class="form-label">Rating</label>
+              <div id="star-rating" class="d-flex gap-1">
+                {% for i in "12345" %}
+                  <i class="bi bi-star" data-value="{{ forloop.counter }}" style="font-size: 1.8rem; cursor: pointer; color: gray;"></i>
+                {% endfor %}
+              </div>
+              <input type="hidden" id="rating" name="rating" required>
+            </div>
+  
+            <!-- Comment -->
+            <div class="mb-3">
+              <label for="comment" class="form-label">Comment</label>
+              <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+            </div>
+  
+            <input type="hidden" id="product_id" name="product_id" value="{{ product.id }}">
+  
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Submit Review</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+
 </div>
 
 <script>
-  document.getElementById("increase-quantity").addEventListener("click", function() {
-    var quantityInput = document.getElementById("quantity-input");
-    var currentQuantity = parseInt(quantityInput.value);
-    quantityInput.value = currentQuantity + 1;
-  });
+// Quantity Increase
+document.getElementById("increase-quantity").addEventListener("click", function() {
+  var quantityInput = document.getElementById("quantity-input");
+  var currentQuantity = parseInt(quantityInput.value) || 0;
+  quantityInput.value = currentQuantity + 1;
+  updateCart('increase');
+});
 
-  document.getElementById("decrease-quantity").addEventListener("click", function() {
-    var quantityInput = document.getElementById("quantity-input");
-    var currentQuantity = parseInt(quantityInput.value);
-    if (currentQuantity > 0) {
-      quantityInput.value = currentQuantity - 1;
+// Quantity Decrease
+document.getElementById("decrease-quantity").addEventListener("click", function() {
+  var quantityInput = document.getElementById("quantity-input");
+  var currentQuantity = parseInt(quantityInput.value) || 0;
+  if (currentQuantity > 0) {
+    quantityInput.value = currentQuantity - 1;
+    updateCart('decrease');
+  }
+});
+
+// Update Cart
+function updateCart(action) {
+  var quantityInput = document.getElementById("quantity-input");
+  var quantity = parseInt(quantityInput.value);
+  var productId = "{{ product.id }}";
+
+  fetch("{% url 'update_cart_ajax' %}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-CSRFToken": "{{ csrf_token }}"
+    },
+    body: new URLSearchParams({
+      product_id: productId,
+      action: action,
+      quantity: quantity
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'success') {
+      console.log(`Cart ${action} successful.`);
+    } else if (data.status === 'error' && data.message === 'Please login first.') {
+      alert("Please login first.");
+      window.location.href = "{% url 'login' %}?next={{ request.path }}";
     }
   });
+}
+// Star rating behavior
+const stars = document.querySelectorAll("#star-rating i");
+const ratingInput = document.getElementById("rating");
 
-  // Add to Cart button functionality
-  document.getElementById("increase-quantity").addEventListener("click", function() {
-    var quantityInput = document.getElementById("quantity-input");
-    var quantity = parseInt(quantityInput.value);
-    if (quantity === 0) {
-      quantity = 1; // If the quantity is 0, set it to 1 before adding to the cart.
-    }
+stars.forEach(star => {
+  star.addEventListener("click", function() {
+    const ratingValue = this.getAttribute("data-value");
+    ratingInput.value = ratingValue;
     
-    var productId = "{{ product.id }}";  // Get product ID from template
-
-    fetch("{% url 'update_cart_ajax' %}", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "X-CSRFToken": "{{ csrf_token }}"
-      },
-      body: new URLSearchParams({
-        product_id: productId,
-        action: 'increase',  // Action is increase, since it's an "Add to Cart" operation
-        quantity: quantity
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === 'success') {
-        console.log("Product added to the cart.");
-      } else if (data.status === 'error' && data.message === 'Please login first.') {
-        alert("Please log in first.");
-        window.location.href = "{% url 'login' %}?next={{ request.path }}";  // Redirect to login page
+    stars.forEach(s => {
+      if (s.getAttribute("data-value") <= ratingValue) {
+        s.classList.remove("bi-star");
+        s.classList.add("bi-star-fill");
+        s.style.color = "gold";
+      } else {
+        s.classList.remove("bi-star-fill");
+        s.classList.add("bi-star");
+        s.style.color = "gray";
       }
     });
   });
+});
 
-  // Remove from Cart button functionality
-  document.getElementById("decrease-quantity").addEventListener("click", function() {
-    var quantityInput = document.getElementById("quantity-input");
-    var quantity = parseInt(quantityInput.value);
-    if (quantity === 0) {
-      alert("No item in cart to remove.");
-      return;
+// Submit Review Form
+document.getElementById("review-form").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const productId = document.getElementById("product_id").value;
+  const rating = document.getElementById("rating").value;
+  const comment = document.getElementById("comment").value;
+
+  if (!rating) {
+    alert("Please select a rating by clicking on the stars!");
+    return;
+  }
+
+  fetch("{% url 'submit_review' %}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-CSRFToken": "{{ csrf_token }}"
+    },
+    body: new URLSearchParams({
+      product_id: productId,
+      rating: rating,
+      comment: comment
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'success') {
+      alert("Review submitted successfully!");
+      window.location.reload();
+    } else {
+      alert(data.message);
     }
-
-    var productId = "{{ product.id }}";  // Get product ID from template
-
-    fetch("{% url 'update_cart_ajax' %}", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "X-CSRFToken": "{{ csrf_token }}"
-      },
-      body: new URLSearchParams({
-        product_id: productId,
-        action: 'decrease',  // Action is decrease, since it's a "Remove from Cart" operation
-        quantity: quantity
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === 'success') {
-        console.log("Product removed from the cart.");
-      } else if (data.status === 'error' && data.message === 'Please login first.') {
-        alert("Please log in first.");
-        window.location.href = "{% url 'login' %}?next={{ request.path }}";  // Redirect to login page
-      }
-    });
   });
+});
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
