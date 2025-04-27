@@ -56,8 +56,27 @@
         bottom: -8px;
         left: 25%;
     }
-</style>
 
+</style>
+<style>
+    @media (max-width: 576px) {
+        /* Smaller Image */
+        .product-card .card-img-top {
+            height: 150px !important;
+            object-fit: cover;
+        }
+    
+        /* Smaller Product Name */
+        .product-card .card-title {
+            font-size: 14px !important;
+        }
+    
+        /* Smaller Product Price */
+        .product-card .card-text {
+            font-size: 13px !important;
+        }
+    }
+    </style>
 <!-- Banner -->
 <div class="container-fluid px-0 mb-5">
     <img src="/static/image2.jpg" class="img-fluid w-100 banner-img" alt="Banner">
@@ -90,10 +109,18 @@
                     {% if product.image %}
                         <img src="{{ product.image.url }}" class="card-img-top img-fluid" alt="{{ product.name }}" style="height: 220px; object-fit: cover;">
                     {% endif %}
-                    <div class="card-body text-center">
-                        <h5 class="card-title mb-2">{{ product.name }}</h5>
-                        <p class="card-text text-success fw-bold mb-0">₹{{ product.price }}</p>
+                    <div class="card-body text-center px-2">
+                        <div class="d-flex align-items-center">
+                            <h5 class="card-title mb-0 text-start" style="flex: 3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px;">
+                                {{ product.name }}
+                            </h5>
+                            <p class="card-text text-success fw-bold mb-0 text-end ms-2" style="flex: 1; font-size: 13px;">
+                                ₹{{ product.price }}
+                            </p>
+                        </div>
                     </div>
+                    
+                    
                 </a>
 
                 <!-- Quantity Controls -->
