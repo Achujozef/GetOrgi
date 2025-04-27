@@ -26,5 +26,5 @@ urlpatterns = [
     path('return-policy/', views.return_policy, name='return_policy'),
     path('profile/', views.user_profile, name='user_profile'),
     path('edit-address/<int:address_id>/', views.edit_address_for_user_profile, name='edit_address_for_user_profile'),
-    
+    path('delete-cart-item/', views.delete_cart_item, name='delete_cart_item')
 ]

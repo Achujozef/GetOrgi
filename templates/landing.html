@@ -105,12 +105,12 @@
             <div class="card h-100 shadow-sm product-card" data-category="{{ product.category.id }}">
                 
                 <!-- Product Link Area -->
-                <a href="{% url 'product_detail' product.pk %}" class="text-decoration-none text-dark product-link" style="display: block;">
+                {% comment %} <a href="{% url 'product_detail' product.pk %}" class="text-decoration-none text-dark product-link" style="display: block;">
                     {% if product.image %}
                         <img src="{{ product.image.url }}" class="card-img-top img-fluid" alt="{{ product.name }}" style="height: 220px; object-fit: cover;">
                     {% endif %}
-                    <div class="card-body text-center px-2">
-                        <div class="d-flex align-items-center">
+                    <div class="card-body text-center px-2 py-1" style="padding-top: 4px; padding-bottom: 4px;"> <!-- 🔥 Reduced padding -->
+                        <div class="d-flex align-items-center" style="margin-top: 0; margin-bottom: 0;"> <!-- 🔥 Removed margins -->
                             <h5 class="card-title mb-0 text-start" style="flex: 3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px;">
                                 {{ product.name }}
                             </h5>
@@ -119,12 +119,32 @@
                             </p>
                         </div>
                     </div>
+                </a> {% endcomment %}
+                <a href="{% url 'product_detail' product.pk %}" class="text-decoration-none text-dark product-link" style="display: block; position: relative;">
+                    {% if product.image %}
+                        <div style="position: relative;">
+                            <img src="{{ product.image.url }}" class="card-img-top img-fluid" alt="{{ product.name }}" style="height: 220px; object-fit: cover;">
+                            
+                            <!-- Small orange card for quantity -->
+                            <div style="position: absolute; bottom: 8px; right: 8px; background-color: orange; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
+                                {{ product.quantity }}
+                            </div>
+                        </div>
+                    {% endif %}
                     
-                    
+                    <div class="card-body text-center px-2 py-1" style="padding-top: 4px; padding-bottom: 4px;">
+                        <div class="d-flex align-items-center" style="margin-top: 0; margin-bottom: 0;">
+                            <h5 class="card-title mb-0 text-start" style="flex: 3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px;">
+                                {{ product.name }}
+                            </h5>
+                            <p class="card-text text-success fw-bold mb-0 text-end ms-2" style="flex: 1; font-size: 13px;">
+                                ₹{{ product.price }}
+                            </p>
+                        </div>
+                    </div>
                 </a>
-
                 <!-- Quantity Controls -->
-                <div class="card-body pt-0 pb-3 text-center">
+                <div class="card-body pt-0 pb-1 text-center">
                     <div class="d-flex justify-content-center align-items-center quantity-controls">
                         <button class="btn btn-sm btn-outline-success prevent-click">-</button>
                         <input type="text" value="{{ cart_quantities|get_item:product.id|default:'0' }}" 

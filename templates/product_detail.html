@@ -98,7 +98,7 @@
     <div class="col-fixed">
       <h2 class="text-success">{{ product.name }}</h2>
       <p class="text-muted small">{{ product.description }}</p>
-      <h4 class="text-success mb-3">₹{{ product.price }}</h4>
+      <h4 class="text-success mb-3">₹{{ product.price }} / {{ product.quantity }}</h4>
 
       <div class="d-flex align-items-center mb-2">
         <div class="me-2">⭐ {{ product.rating }} / 5</div> |
@@ -156,18 +156,26 @@
   <div class="similar-products">
     <h4 class="text-success mb-4">Similar Products</h4>
     <div class="similar-products-row">
-      {% for similar in similar_products %}
-      <div class="card shadow-sm">
-        <img src="{{ similar.image.url }}" class="card-img-top" style="height: 120px; object-fit: cover;">
-        <div class="card-body p-2 text-center">
-          <h6 class="card-title small">{{ similar.name }}</h6>
-          <p class="text-success small mb-2">₹{{ similar.price }}</p>
-          <a href="{% url 'product_detail' similar.pk %}" class="btn btn-sm btn-outline-success btn-premium w-100">View</a>
+        {% for similar in similar_products %}
+        <div class="card shadow-sm">
+            <div style="position: relative;">
+                <img src="{{ similar.image.url }}" class="card-img-top" style="height: 120px; object-fit: cover;">
+                
+                <!-- Small orange card for quantity -->
+                <div style="position: absolute; bottom: 6px; right: 6px; background-color: orange; color: white; padding: 2px 5px; border-radius: 3px; font-size: 11px;">
+                    {{ similar.quantity }}
+                </div>
+            </div>
+            <div class="card-body p-2 text-center">
+                <h6 class="card-title small">{{ similar.name }}</h6>
+                <p class="text-success small mb-2">₹{{ similar.price }}</p>
+                <a href="{% url 'product_detail' similar.pk %}" class="btn btn-sm btn-outline-success btn-premium w-100">View</a>
+            </div>
         </div>
-      </div>
-      {% endfor %}
+        {% endfor %}
     </div>
-  </div>
+</div>
+
   <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">

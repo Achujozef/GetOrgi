@@ -268,33 +268,13 @@ def update_cart_ajax(request):
 
     return JsonResponse({'status': 'error'})
 
-# @login_required
-def place_order_from_cart(request):
-    user = request.user
-    cart_items = CartItem.objects.filter(user=user)
+def place_order_from_cart(request,):
+    if "mobile" not in request.session:
+        return redirect("login")
 
-    if not cart_items:
-        return redirect('cart')
-
-    address = Address.objects.filter(user=user).first()  # Get first address for now
-
-    total = sum(item.product.price * item.quantity for item in cart_items)
-
-    order = Order.objects.create(user=user, address=address, total_amount=total,is_paid=True)
-
-    for item in cart_items:
-        OrderItem.objects.create(
-            order=order,
-            product=item.product,
-            quantity=item.quantity,
-            price=item.product.price
-        )
-        item.product.purchase_count += item.quantity
-        item.product.save()
-
-    cart_items.delete()
-
-    return render(request, 'order_success.html', {'order': order})
+    request.session.pop("order_mode", None)
+    request.session.pop("buy_now_product_id", None)
+    return redirect("address_list")
 
 def buy_now(request, product_id):
     if "mobile" not in request.session:
@@ -312,7 +292,7 @@ def order_summary(request):
     selected_address_id = request.session.get("selected_address_id")
     selected_address = Address.objects.get(id=selected_address_id) if selected_address_id else None
 
-    if request.session.get("order_mode") == "buy_now":
+    if request.session.get("order_mode") and request.session.get("order_mode") == "buy_now":
         product_id = request.session.get("buy_now_product_id")
         product = get_object_or_404(Product, id=product_id)
         quantity = 1
@@ -526,3 +506,23 @@ def load_more_orders(request):
         'orders': orders_data,
         'has_next': page_obj.has_next(),  # To check if there's more to load
     })
+
+@csrf_exempt
+def delete_cart_item(request):
+    if request.method == "POST":
+        cart_item_id = request.POST.get('cart_item_id')
+        try:
+            cart_item = CartItem.objects.get(id=cart_item_id)
+            user = cart_item.user
+            cart_item.delete()
+
+            # Recalculate total
+            cart_items = CartItem.objects.filter(user=user)
+            total = sum([item.subtotal() for item in cart_items])
+            cart_count = cart_items.count()
+
+            return JsonResponse({'success': True, 'total': total, 'cart_count': cart_count})
+        except CartItem.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Item not found'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
