@@ -42,16 +42,18 @@ def landing_page(request):
 
 
 def product_detail(request, pk):
+    
     product = get_object_or_404(Product, pk=pk)
     similar_products = Product.objects.filter(category=product.category).exclude(pk=pk)[:10]
-    user_mobile = request.session["mobile"]
-    user = OrgiUser.objects.get(mobile=user_mobile)
+
     cart_item = None
     cart_count = 0
     purchased = False
     already_reviewed = False
 
     if "mobile" in request.session:
+        user_mobile = request.session["mobile"]
+        user = OrgiUser.objects.get(mobile=user_mobile)
         cart_item = CartItem.objects.filter(user=user, product=product).first()
         cart_items = CartItem.objects.filter(user=user)
         cart_count = cart_items.count()
