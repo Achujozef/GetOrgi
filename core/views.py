@@ -20,6 +20,10 @@ def landing_page(request):
     categories = Category.objects.all()
     products = Product.objects.all()
 
+    search_query = request.GET.get('q', '')
+    if search_query:
+        products = products.filter(name__icontains=search_query) | products.filter(description__icontains=search_query)
+
     cart_quantities = {}
 
     if "mobile" in request.session:
