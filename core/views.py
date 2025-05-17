@@ -532,3 +532,37 @@ def delete_cart_item(request):
             return JsonResponse({'success': False, 'error': 'Item not found'})
     
     return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+def order_detail(request, order_id):
+    if 'mobile' not in request.session:
+        messages.error(request, "Please login first.")
+        return redirect('login')
+
+    user = OrgiUser.objects.get(mobile=request.session['mobile'])
+    order = get_object_or_404(Order, id=order_id, user=user)
+
+    # Prepare status choices and current status index
+    status_choices = order.STATUS_CHOICES  # list of tuples e.g. [('pending', 'Pending'), ...]
+    status_keys = [choice[0] for choice in status_choices]
+    current_status_index = status_keys.index(order.status) if order.status in status_keys else -1
+
+    context = {
+        'order': order,
+        'status_choices': status_choices,
+        'current_status_index': current_status_index,
+    }
+    return render(request, 'order_detail.html', context)
+
+
+@login_required
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if order.status in ['placed', 'packed']:
+        order.status = 'cancelled'
+        order.save()
+        messages.success(request, f"Order #{order.id} has been cancelled.")
+    else:
+        messages.warning(request, "This order cannot be cancelled at this stage.")
+
+    return redirect('order_detail', order_id=order.id)

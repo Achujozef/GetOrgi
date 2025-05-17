@@ -20,12 +20,17 @@
                             <th>Price</th>
                             <th>Quantity</th>
                             <th>Subtotal</th>
+                            <th>Remove</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in cart_items %}
                         <tr id="cart-item-{{ item.id }}">
-                            <td>{{ item.product.name }}</td>
+                           <td class="text-center">
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
+                                <div class="small mt-1">{{ item.product.name }}</div>
+                            </td>
+
                             <td>₹{{ item.product.price }}</td>
                             <td>
                                 <div class="d-flex align-items-center justify-content-center">

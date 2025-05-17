@@ -205,10 +205,14 @@
             })
         })
         .then(response => response.json())
-        .then(data => {
+       .then(data => {
             if (data.status === 'success') {
                 inputBox.value = data.new_quantity;
-                document.getElementById('cart-count').innerText = data.cart_count;
+
+                // Update all cart count elements
+                document.querySelectorAll('.cart-count').forEach(el => {
+                    el.innerText = data.cart_count;
+                });
             } else if (data.status === 'error' && data.redirect === 'login') {
                 window.location.href = "/login";
             }

@@ -16,6 +16,7 @@
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<!-- Bootstrap 5 Bundle with Popper.js -->
 
     <style>
         /* Global Styles */
@@ -44,6 +45,7 @@
             font-weight: 700;
             font-size: 1.5rem;
             letter-spacing: 0.5px;
+             color: #ffffff
         }
         .navbar-nav .nav-link {
             color: white;
@@ -137,7 +139,7 @@
         /* Optional: Make sure the bubble is visible when screen is small */
         @media (max-width: 768px) {
             .whatsapp-text {
-                max-width: 150px;
+                max-width: 100%;
             }
             .form-control {
               search-bar: 0 !important;
@@ -173,9 +175,9 @@
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg sticky-top shadow-sm">
             <div class="container">
-              {% comment %} <a class="navbar-brand d-flex align-items-center" href="/">
-                <img src="static/getorgilogo.jpg" alt="Get Orgi Logo" height="40">
-              </a> {% endcomment %}
+            <a class="navbar-brand d-flex align-items-center" href="/">
+               GetOrgi
+              </a> 
               <!-- Navbar Search Box -->
               <form class="d-flex ms-auto search-bar" method="get" action="{% url 'landing' %}">
                 <input class="form-control me-2" type="search" name="q" placeholder="Search products..." aria-label="Search" value="{{ request.GET.q }}">
@@ -197,9 +199,9 @@
                   </li>
                   <li class="nav-item">
                     <a href="{% url 'cart' %}" class="nav-link cart-icon-navbar">
-                      My Cart <i class="fa fa-shopping-cart"></i>
-                      <span id="cart-count">{{ cart_count }}</span>
-                    </a>
+                    My Cart <i class="fa fa-shopping-cart"></i>
+                    <span class="cart-count">{{ cart_count }}</span>
+                  </a>
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" href="{% url 'contact_us' %}">Contact</a>
@@ -231,16 +233,25 @@
 
         {% block content %}
         {% endblock %}
-        <a href="{% url 'cart' %}" class="cart-icon">
-            <i class="fa fa-shopping-cart"></i>
-            <span id="cart-count">{{ cart_count }}</span>
-        </a>
-        <a href="https://wa.me/916282954359" class="whatsapp-icon" target="_blank">
-          <i class="fab fa-whatsapp" aria-hidden="true"></i>
-          <div class="whatsapp-text">
-            <span>Hi!</span>
-          </div>
-        </a>
+      <!-- Sticky Floating Buttons Container -->
+      <div style="position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; z-index: 1000;">
+
+          <!-- Go to Cart Button -->
+          <a href="{% url 'cart' %}" class="btn btn-success d-flex align-items-center px-3 py-2 shadow" style="border-radius: 8px; font-weight: 500;">
+              <i class="fa fa-shopping-cart me-2"></i>
+              Go to Cart
+              <span class="cart-count badge bg-light text-success ms-2" style="font-size: 0.85rem;">{{ cart_count }}</span>
+          </a>
+
+          <a href="https://wa.me/916282954359" class="whatsapp-icon" target="_blank">
+                <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                <div class="whatsapp-text">
+                  <span>Hi!</span>
+                </div>
+              </a>
+      </div>
+
+
         
     </main>
     <footer style="margin-top: 30px;">

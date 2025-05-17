@@ -256,13 +256,24 @@ function updateCart(action) {
   })
   .then(response => response.json())
   .then(data => {
-    if (data.status === 'success') {
-      console.log(`Cart ${action} successful.`);
-    } else if (data.status === 'error' && data.message === 'Please login first.') {
-      alert("Please login first.");
-      window.location.href = "{% url 'login' %}?next={{ request.path }}";
+  if (data.status === 'success') {
+    console.log(`Cart ${action} successful.`);
+
+    // Update cart count in all locations
+    document.querySelectorAll('.cart-count').forEach(el => {
+      el.innerText = data.cart_count;
+    });
+
+    // Optional: update the quantity input field if returned
+    if (data.new_quantity !== undefined) {
+      quantityInput.value = data.new_quantity;
     }
-  });
+
+  } else if (data.status === 'error' && data.message === 'Please login first.') {
+    alert("Please login first.");
+    window.location.href = "{% url 'login' %}?next={{ request.path }}";
+  }
+});
 }
 // Star rating behavior
 const stars = document.querySelectorAll("#star-rating i");
