@@ -176,6 +176,43 @@
 }
 
     </style>
+<style>
+#otp-loader.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.9);
+    display: none;                /* Hidden initially */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 99999;
+}
+
+#otp-loader.loader-overlay.show {
+    display: flex;                /* Show when the class 'show' is added */
+}
+
+.rotating-logo {
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loader-text {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #198754;
+    font-size: 18px;
+}
+</style>
+
+
     <!-- Firebase JS SDK -->
 {% comment %} <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js"></script>

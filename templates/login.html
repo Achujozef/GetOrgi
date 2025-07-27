@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static%}
 {% block title %}Login{% endblock %}
 {% block content %}
 
@@ -14,7 +15,7 @@
                 </div>
             {% endfor %}
         {% endif %}
-
+                <div id="js-messages"></div>
         <!-- Mobile Input & Send OTP -->
         <div id="mobile-input-section" {% if request.session.show_otp %}style="display:none;"{% endif %}>
             <label for="phoneNumber" class="form-label">Mobile Number</label>
@@ -44,6 +45,12 @@
         </div>
     </div>
 </div>
+<!-- Fullscreen Loader -->
+<div id="otp-loader" class="loader-overlay">
+    <img src="{% static 'getorgilogo1.png' %}" class="rotating-logo" width="100" alt="Loading...">
+    <p class="loader-text">Sending OTP, please wait...</p>
+</div>
+
 
 <!-- Firebase reCAPTCHA container (invisible) -->
 <div id="recaptcha-container"></div>
@@ -55,6 +62,17 @@
 <meta name="csrf-token" content="{{ csrf_token }}">
 
 <script>
+
+function showMessage(type, text) {
+    const msgDiv = document.getElementById("js-messages");
+    msgDiv.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${text}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`;
+}
+
+
     // Firebase config
     const firebaseConfig = {
         apiKey: "AIzaSyDWUvDObpVmGqw3sgjXSueXDzOf9il0Wz4",
@@ -72,37 +90,56 @@
     });
 
     let confirmationResult;
+function showLoader() {
+    document.getElementById("otp-loader").classList.add("show");
+}
 
-    function sendOTP() {
-        let phone = document.getElementById("phoneNumber").value.trim();
-        if (!/^\d{10}$/.test(phone)) {
-            alert("Enter a valid 10-digit phone number.");
-            return;
-        }
+function hideLoader() {
+    document.getElementById("otp-loader").classList.remove("show");
+}
 
-        const fullPhone = "+91" + phone;
-
-        firebase.auth().signInWithPhoneNumber(fullPhone, window.recaptchaVerifier)
-            .then((result) => {
-                confirmationResult = result;
-                alert("OTP sent successfully!");
-
-                // Show OTP input, hide phone input
-                document.getElementById("otp-section").style.display = "block";
-                document.getElementById("mobile-input-section").style.display = "none";
-
-                startTimer(60);
-
-            }).catch((error) => {
-                alert("Error sending OTP: " + error.message);
-                console.error(error);
-            });
+ function sendOTP() {
+    let phone = document.getElementById("phoneNumber").value.trim();
+    if (!/^\d{10}$/.test(phone)) {
+        showMessage("danger", "Enter a valid 10-digit phone number.");
+        return;
     }
+
+    // Show loader
+    showLoader();
+    // Disable send button to prevent multiple clicks
+    const sendBtn = document.querySelector('#mobile-input-section button');
+    sendBtn.disabled = true;
+
+    const fullPhone = "+91" + phone;
+
+    firebase.auth().signInWithPhoneNumber(fullPhone, window.recaptchaVerifier)
+       .then((result) => {
+            confirmationResult = result;
+            showMessage("success", "OTP sent successfully!");
+
+            // Show OTP input, hide phone input
+            document.getElementById("otp-section").style.display = "block";
+            document.getElementById("mobile-input-section").style.display = "none";
+
+            startTimer(60);
+       })
+       .catch((error) => {
+           showMessage("danger", "Error sending OTP: " + error.message);
+           console.error(error);
+       })
+       .finally(() => {
+           // Hide loader and re-enable send button no matter success or error
+           hideLoader();
+           sendBtn.disabled = false;
+       });
+}
+
 
     function verifyOTP() {
         const code = document.getElementById("otpInput").value.trim();
         if (!code) {
-            alert("Please enter the OTP.");
+            showMessage("success", "Please enter the OTP.");
             return;
         }
 
@@ -124,12 +161,12 @@
                         window.location.href = '/';
                     },
                     error: function () {
-                        alert("OTP verified but server login failed.");
+                        showMessage("warning", "OTP verified but server login failed.");
                     }
                 });
             })
             .catch((error) => {
-                alert("Invalid OTP. Please try again.");
+                showMessage("danger", "Invalid OTP. Please try again.");
                 console.error(error);
             });
     }
