@@ -15,6 +15,11 @@ import json
 from django.db.models import Avg
 from django.http import Http404
 from django.core.paginator import Paginator
+import random
+import requests
+import time
+from datetime import datetime, timedelta
+
 
 def landing_page(request):
     categories = Category.objects.all()
@@ -124,28 +129,148 @@ def update_cart(request):
         cart_item.save()
 
         return JsonResponse({'status': 'success', 'new_quantity': cart_item.quantity, 'new_total': cart_item.product.price * cart_item.quantity})
-    
-def login_view(request):
-    if request.method == 'POST':
-        mobile = request.POST.get('mobile', '').strip()
 
-        if not mobile:
-            messages.error(request, "Mobile number is required.")
-            return redirect('login')
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
 
-        if not mobile.isdigit() or len(mobile) < 10:
-            messages.error(request, "Enter a valid mobile number.")
-            return redirect('login')
+@csrf_exempt
+def firebase_login_callback(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        phone = data.get('phone')
 
-        user, created = OrgiUser.objects.get_or_create(mobile=mobile)
-
+        if phone and phone.startswith('+91'):
+            phone = phone[3:]  # remove +91 if needed
+        user, _ = OrgiUser.objects.get_or_create(mobile=phone)
         request.session['user_id'] = user.id
-        request.session['mobile'] = user.mobile  
+        return JsonResponse({'success': True}, status=200)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
 
-        messages.success(request, f"Welcome, {mobile}! Continue shopping.")
-        return redirect('/')
+
+def send_otp_sms(mobile, otp):
+    try:
+        print("📲 Preparing to send OTP via Fast2SMS")
+        url = "https://www.fast2sms.com/dev/bulkV2"
+        payload = {
+            "authorization": "ZNfToa26H3bYz0feH62vXueiC9JVtcxrm1wuCjkVvXuCRIohz5oPpcHhUQNf",
+            "variables_values": str(otp),
+            "route": "otp",
+            "numbers": mobile
+        }
+        headers = {'cache-control': "no-cache"}
+        response = requests.get(url, params=payload, headers=headers)
+        print("✅ Fast2SMS Request Sent. Status:", response.status_code)
+        print("📡 Fast2SMS Response:", response.text)
+        return response.json()
+    except Exception as e:
+        print("🚨 SMS Sending Error:", e)
+        return {"return": False, "error": str(e)}
+
+
+def login_view(request):
+    session = request.session
+
+    print("🔍 Incoming Request Method:", request.method)
+    print("📦 Current Session Data:", dict(session))
+
+    # Initialize resend tracking
+    if 'resend_reset_time' not in session:
+        session['resend_reset_time'] = (datetime.now() + timedelta(hours=1)).timestamp()
+        session['resend_count'] = 0
+        print("⏱️ Resend reset time initialized")
+
+    # Reset resend counter after 1 hour
+    if time.time() > session.get('resend_reset_time', 0):
+        session['resend_count'] = 0
+        session['resend_reset_time'] = (datetime.now() + timedelta(hours=1)).timestamp()
+        print("🔁 Resend counter reset after 1 hour")
+
+    if request.method == 'POST':
+        print("📨 POST Data:", request.POST)
+
+        if session.get('show_otp'):
+            if 'resend' in request.POST:
+                print("🔁 Resend button clicked")
+
+                if session['resend_count'] >= 4:
+                    messages.error(request, "OTP resend limit exceeded. Try again after 1 hour.")
+                    print("❌ Resend limit reached")
+                else:
+                    otp = random.randint(1000, 9999)
+                    session['otp'] = str(otp)
+                    session['resend_count'] += 1
+                    print(f"✅ Sending new OTP: {otp}")
+                    response = send_otp_sms(session['mobile'], otp)
+                    print("📡 SMS API Response:", response)
+                    messages.success(request, f"OTP resent to {session['mobile']}")
+                return redirect('login')
+
+            # OTP verification flow
+            entered_otp = request.POST.get('otp', '').strip()
+            print("🔐 Entered OTP:", entered_otp)
+            print("🔐 Session OTP:", session.get('otp'))
+
+            if entered_otp == session.get('otp'):
+                user, _ = OrgiUser.objects.get_or_create(mobile=session['mobile'])
+                session['user_id'] = user.id
+                print("✅ OTP verified. Logging in user:", user.mobile)
+
+                # Clean up
+                session.pop('otp', None)
+                session.pop('show_otp', None)
+                return redirect('/')
+            else:
+                messages.error(request, "Invalid OTP.")
+                print("❌ Invalid OTP entered")
+                return redirect('login')
+
+        else:
+            # First time submission (mobile)
+            mobile = request.POST.get('mobile', '').strip()
+            print("📞 Received Mobile:", mobile)
+
+            if not mobile or not mobile.isdigit() or len(mobile) != 10:
+                messages.error(request, "Enter a valid mobile number.")
+                print("❌ Invalid mobile number")
+                return redirect('login')
+
+            otp = random.randint(1000, 9999)
+            session['otp'] = str(otp)
+            session['mobile'] = mobile
+            session['show_otp'] = True
+            session['resend_count'] += 1
+            print(f"📲 Sending OTP to new mobile: {mobile}, OTP: {otp}")
+            response = send_otp_sms(mobile, otp)
+            print("📡 SMS API Response:", response)
+            messages.success(request, f"OTP sent to {mobile}")
+            return redirect('login')
 
     return render(request, 'login.html')
+from django.views.decorators.http import require_POST
+@csrf_exempt  # Only if CSRF token isn't sent from JS. Else use proper token.
+@require_POST
+def phone_login_view(request):
+    phone_number = request.POST.get('phone_number', '').strip()
+
+    if not phone_number or not phone_number.isdigit() or len(phone_number) != 10:
+        return JsonResponse({'error': 'Invalid phone number'}, status=400)
+
+    try:
+        user, created = OrgiUser.objects.get_or_create(mobile=phone_number)
+
+        # Set session data just like in login_view after OTP verification
+        request.session['user_id'] = user.id
+        request.session['mobile'] = phone_number
+
+        # Clear any previous OTP session data if needed
+        request.session.pop('otp', None)
+        request.session.pop('show_otp', None)
+
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 
 def logout_view(request):
     request.session.flush()

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,6 +39,8 @@
 
         /* Navbar Styling */
         .navbar {
+            height: 70px; /* Fixed height */
+            padding: 0 !important;
             background-color: #198754;
             transition: all 0.3s ease-in-out;
         }
@@ -165,18 +168,45 @@
       .navbar .form-control {
           border-radius: 20px;
       } 
+      .navbar-brand img {
+    max-height: 48px;  /* Adjust size as needed */
+    padding: 0;
+    margin: 0;
+    vertical-align: middle;
+}
 
     </style>
+    <!-- Firebase JS SDK -->
+{% comment %} <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js"></script>
+
+<script>
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDWUvDObpVmGqw3sgjXSueXDzOf9il0Wz4",
+    authDomain: "getorgi.firebaseapp.com",
+    projectId: "getorgi",
+    storageBucket: "getorgi.firebasestorage.app",
+    messagingSenderId: "429612679870",
+    appId: "1:429612679870:web:a7b78c6d5e78bd948f54ef",
+    measurementId: "G-3MXX7DPDEG"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script> {% endcomment %}
+
 </head>
 <body>
     <header></header>
     
     <main>
         <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg sticky-top shadow-sm">
+        <nav class="navbar navbar-expand-lg sticky-top shadow-sm" style=" padding: 0;">
             <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="/">
-               GetOrgi
+<img src="{% static 'getorgilogo1.png' %}" alt="Get Orgi Logo" style="max-height: 68px; padding: 0; margin: 0;">
+
               </a> 
               <!-- Navbar Search Box -->
               <form class="d-flex ms-auto search-bar" method="get" action="{% url 'landing' %}">
@@ -262,6 +292,10 @@
             <p>Follow us on <a href="https://www.facebook.com/people/Get-Orgi/100083603130941/">Facebook</a></p>
         </div>
     </footer>
+    <!-- Include Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js"></script>
+
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const toggler = document.querySelector(".navbar-toggler");

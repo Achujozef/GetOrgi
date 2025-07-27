@@ -29,6 +29,7 @@ urlpatterns = [
     path('delete-cart-item/', views.delete_cart_item, name='delete_cart_item'),
     path('order/<int:order_id>/', views.order_detail, name='order_detail'),
     path('order/cancel/<int:order_id>/', views.cancel_order, name='cancel_order'),
-
+    path('phone_login/', views.phone_login_view, name='phone_login'),
+    path('firebase-login-callback/', views.firebase_login_callback, name='firebase_login_callback'),
 
 ]
