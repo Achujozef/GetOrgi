@@ -48,6 +48,39 @@ def landing_page(request):
         'cart_count': cart_count
     })
 
+def index(request):
+    categories = Category.objects.all()
+    category_products = []
+
+    for category in categories:
+        first_product = Product.objects.filter(category=category).first()
+        if first_product:
+            category_products.append(first_product)
+
+    search_query = request.GET.get('q', '')
+    if search_query:
+        products = Product.objects.filter(name__icontains=search_query) | Product.objects.filter(description__icontains=search_query)
+    else:
+        products = Product.objects.all()
+
+    cart_quantities = {}
+
+    if "mobile" in request.session:
+        user = OrgiUser.objects.get(mobile=request.session["mobile"])
+        cart_items = CartItem.objects.filter(user=user)
+        cart_quantities = {item.product.id: item.quantity for item in cart_items}
+        cart_count = cart_items.count()
+    else:
+        cart_count = 0
+
+    return render(request, 'index.html', {
+        'categories': categories,
+        'category_products': category_products,  # ✅ Added
+        'products': products,
+        'cart_quantities': cart_quantities,
+        'cart_count': cart_count
+    })
+
 
 
 def product_detail(request, pk):
