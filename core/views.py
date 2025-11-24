@@ -9,7 +9,6 @@ from django.conf import settings
 from .models import Address
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum
-from django.shortcuts import redirect
 from django.contrib import messages
 import json
 from django.db.models import Avg
