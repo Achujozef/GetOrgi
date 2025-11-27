@@ -1,0 +1,43 @@
+    body {
+        background-color: #f8fdf8;
+    }
+    .card {
+        border: 1px solid #198754;
+        border-radius: 12px;
+        user-select: none; /* Disable text selection */
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .card:hover {
+        background-color: #e6f7e6; /* Light green on hover */
+    }
+    .btn-success, .btn-outline-success, .btn-primary {
+        background-color: #198754;
+        border-color: #198754;
+    }
+    .btn-outline-success {
+        color: #198754;
+        background: white;
+    }
+    .btn-primary {
+        background-color: #28a745;
+        border: none;
+    }
+    .btn-primary:hover, .btn-success:hover {
+        background-color: #218838;
+    }
+    .form-control:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+    }
+    .edit-address-btn {
+        font-size: 0.8rem;
+        padding: 5px 10px;
+        z-index: 10;
+    }
+    .modal-content {
+        border-radius: 15px;
+    }
+    label {
+        user-select: none;
+    }

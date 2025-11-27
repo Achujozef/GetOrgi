@@ -1,0 +1,20 @@
+.cart-product-img {
+    width: 60px; 
+    height: 60px; 
+    object-fit: cover; 
+    border-radius: 5px;
+}
+
+.qty-box{
+    width: 50px;
+}
+
+.empty-cart-wrapper{
+    min-height: 60vh;
+}
+
+.empty-cart-img{
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+}
