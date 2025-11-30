@@ -114,7 +114,7 @@ def product_detail(request, pk):
             cart_item = CartItem.objects.filter(user=user, product=product).first()
             cart_items = CartItem.objects.filter(user=user)
             cart_count = cart_items.count()
-            purchased = OrderItem.objects.filter(order__user=user, product=product, order__is_paid=True).exists()
+            purchased = OrderItem.objects.filter(order__user=user, product=product).exists()
             already_reviewed = Review.objects.filter(user=user, product=product).exists()
             # print("already_reviewed, purchased :",already_reviewed, purchased)
         return render(request, 'product_detail.html', {
@@ -146,7 +146,6 @@ def cart_view(request):
 
 
             total = sum([item.product.price * item.quantity for item in cart_items])
-
 
             delivery_charge = Delivery.objects.first().charge
 
@@ -195,7 +194,13 @@ def update_cart(request):
 
             cart_item.save()
 
-            return JsonResponse({'status': 'success', 'new_quantity': cart_item.quantity, 'new_total': cart_item.product.price * cart_item.quantity})
+            user = OrgiUser.objects.get(mobile=request.session["mobile"])
+            cart_items = CartItem.objects.filter(user=user)
+            total = sum(item.product.price * item.quantity for item in cart_items)
+            cart_count = cart_items.count()
+
+            # return JsonResponse({'status': 'success', 'new_quantity': cart_item.quantity, 'new_total': cart_item.product.price * cart_item.quantity, 'total': total})
+            return JsonResponse({'status': 'success', 'new_quantity': cart_item.quantity, 'new_total': cart_item.product.price * cart_item.quantity, 'total': total, 'cart_count': cart_count})
     except Exception as e:
       
         print(f"Error in landing_page: {str(e)}")
@@ -485,6 +490,7 @@ def update_cart_ajax(request):
             user = OrgiUser.objects.get(mobile=request.session["mobile"])
             product = Product.objects.get(id=product_id)
 
+
             cart_item, created = CartItem.objects.get_or_create(user=user, product=product)
 
             if action == "increase":
@@ -519,6 +525,7 @@ def update_cart_ajax(request):
                 'status': 'success',
                 'new_quantity': new_quantity if action == 'decrease' else cart_item.quantity,
                 'item_subtotal': item_subtotal,
+                'new_total': item_subtotal,
                 'total': total,
                 'cart_count': cart_count
             })
@@ -921,21 +928,65 @@ def order_detail(request, order_id):
         }, status=500)
 
 
-@login_required
-def cancel_order(request, order_id):
+# @login_required
+# def cancel_order(request, order_id):
+#     try:
+#         order = get_object_or_404(Order, id=order_id, user=request.user)
 
+#         if order.status in ['placed', 'packed']:
+            
+#             order.status = 'cancelled'
+#             order.save()
+            
+            
+#             return JsonResponse({
+#                 'success': True,
+#                 'message': f"Order #{order.id} has been cancelled."
+#             })
+#         else:
+#             return JsonResponse({
+#                 'success': False,
+#                 'message': "This order cannot be cancelled at this stage."
+#             }, status=400)
+
+#     except Exception as e:
+#         print(f"Error in cancel_order: {str(e)}")
+#         return JsonResponse({
+#             'success': False,
+#             'message': str(e)
+#         }, status=500)
+
+@csrf_exempt
+def cancel_order(request, order_id):
     try:
-        order = get_object_or_404(Order, id=order_id, user=request.user)
+        # # Check if user is logged in via session
+        # if 'mobile' not in request.session:
+        #     return JsonResponse({
+        #         'success': False,
+        #         'message': "Please login first."
+        #     }, status=401)
+        
+        # Get the user from session
+        user = OrgiUser.objects.get(mobile=request.session['mobile'])
+        order = get_object_or_404(Order, id=order_id, user=user)
 
         if order.status in ['placed', 'packed']:
+            # Get the cancellation reason from POST data
+            # reason = request.POST.get('reason', '').strip()
+            
             order.status = 'cancelled'
             order.save()
-            messages.success(request, f"Order #{order.id} has been cancelled.")
+            
+            return JsonResponse({
+                'success': True,
+                'message': f"Order #{order.id} has been cancelled."
+            })
         else:
-            messages.warning(request, "This order cannot be cancelled at this stage.")
+            return JsonResponse({
+                'success': False,
+                'message': "This order cannot be cancelled at this stage."
+            }, status=400)
 
-        return redirect('order_detail', order_id=order.id)
-    
     except Exception as e:
       
         print(f"Error in landing_page: {str(e)}")

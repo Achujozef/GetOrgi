@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let action = this.getAttribute('data-action');
             let cartItemId = this.getAttribute('data-id');
             let quantityInput = document.querySelector(`#cart-item-${cartItemId} .quantity-input`);
+            
     
             fetch(updateCartUrl, {
                 method: "POST",
@@ -35,13 +36,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRFToken': csrftoken,
                 }
             })
-            .then(response => response.json())
+            // .then(response => response.json())
+            .then(response => {
+                                console.log('Fetch response received:', response); // Add this
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
             .then(data => {
+                console.log('Response data:', data); // Debug log
                 quantityInput.value = data.new_quantity;
-                document.querySelector(`#cart-item-${cartItemId} td:nth-child(4)`).textContent = '₹' + data.item_subtotal.toFixed(2);
-                document.querySelector('.col-12 h4').textContent = 'Total: ₹' + data.total.toFixed(2);
+                document.querySelector(`#cart-item-${cartItemId} td:nth-child(4)`).textContent = '₹' + data.new_total.toFixed(2); 
+                // subtotal-newtotal
+                document.getElementById('cart-total').textContent = 'Total: ₹' + data.total;//.toFixed(2);
     
-                const cartCountElem = document.getElementById("cart-count");
+                const cartCountElem = document.querySelector(".cart-count");
                 if (cartCountElem) {
                     cartCountElem.textContent = data.cart_count;
                 }
@@ -71,9 +81,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         itemRow.remove();
                     }
     
-                    document.querySelector('.col-12 h4').textContent = 'Total: ₹' + data.total.toFixed(2);
+                    document.getElementById('cart-total').textContent = 'Total: ₹' + data.total;//.toFixed(2);
+                    
     
-                    const cartCountElem = document.getElementById("cart-count");
+                    const cartCountElem = document.querySelector(".cart-count");
                     if (cartCountElem) {
                         cartCountElem.textContent = data.cart_count;
                     }

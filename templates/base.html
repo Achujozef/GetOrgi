@@ -52,11 +52,17 @@
                   <li class="nav-item">
                     <a class="nav-link" href="{% url 'shop' %}">Shop</a>
                   </li>
-                  <li class="nav-item">
+                  {% comment %} <li class="nav-item">
                     <a href="{% url 'cart' %}" class="nav-link cart-icon-navbar">
                     My Cart <i class="fa fa-shopping-cart"></i>
                     <span class="cart-count">{{ cart_count }}</span>
                   </a>
+                  </li> {% endcomment %}
+                  <li class="nav-item">
+                      <a href="{% url 'cart' %}" class="nav-link cart-icon-navbar">
+                          My Cart <i class="fa fa-shopping-cart"></i>
+                          <span id="cart-count" class="cart-count">{{ cart_count }}</span>
+                      </a>
                   </li>
                   <li class="nav-item">
                     <a class="nav-link" href="{% url 'contact_us' %}">Contact</a>
@@ -79,6 +85,11 @@
                   {% if request.session.mobile %}
                   <li class="nav-item">
                       <a class="nav-link" href="{% url 'user_profile' %}">My Profile</a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link" href="{% url 'logout' %}">
+                          <i class="fas fa-sign-out-alt"></i> Logout
+                      </a>
                   </li>
                   {% endif %}
                 </ul>

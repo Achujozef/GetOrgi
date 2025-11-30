@@ -596,3 +596,18 @@
         opacity: 1;
         transform: translateY(0);
     }
+
+    /* quantity control */
+
+    .quantity-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    }
+
+    .quantity-controls input[readonly][style*="color: #999"] {
+        background-color: #f5f5f5;
+    }
+
+    .color-box{
+        color: #999;
+    }

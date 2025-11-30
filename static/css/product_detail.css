@@ -1,0 +1,77 @@
+  .container-fixed {
+    width: 1200px;
+    margin: 40px auto;
+  }
+
+  .row-fixed {
+    display: flex;
+    gap: 40px;
+  }
+
+  .col-fixed {
+    flex: 1;
+  }
+
+  .product-image {
+    width: 100%;
+    height: 400px;
+    object-fit: contain;
+    background: #f8f9fa;
+    border-radius: 10px;
+  }
+
+  .quantity-controls button {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .quantity-controls input {
+    width: 60px;
+    height: 40px;
+    text-align: center;
+  }
+
+  .btn-premium {
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+  }
+
+  .similar-products .card {
+    width: 180px;
+  }
+
+  .similar-products-row {
+    display: flex;
+    gap: 20px;
+  }
+
+  /* --------- Mobile Styles --------- */
+  @media (max-width: 768px) {
+    .container-fixed {
+      width: 100%;
+      padding: 20px;
+      margin: 0 auto;
+    }
+
+    .row-fixed {
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .product-image {
+      height: auto;
+      max-height: none;
+      object-fit: contain;
+    }
+
+    .btn-premium {
+      font-size: 0.95rem;
+    }
+
+    .similar-products-row {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+    }
+  }
