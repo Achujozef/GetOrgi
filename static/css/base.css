@@ -409,3 +409,59 @@
 
 }
 
+
+   /* MOBILE NAVBAR FIX */
+
+@media (max-width: 768px) {
+
+    /* Make the navbar taller to fit content */
+    .navbar {
+        height: auto !important;
+        padding: 10px 0 !important;
+    }
+
+    /* Make container vertical */
+    .navbar .container {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    /* Keep logo and hamburger in one row */
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar-toggler {
+        position: absolute;
+        right: 15px;
+        top: 18px;
+        z-index: 10;
+    }
+
+    /* Search bar full width under logo */
+    .search-bar {
+        width: 100%;
+        margin-top: 8px;
+    }
+
+    .search-bar input {
+        width: 100%;
+    }
+
+    /* Dropdown menu fix (white bg = dark text) */
+    .dropdown-menu {
+        background: white !important;
+    }
+
+    .dropdown-item {
+        color: #198754 !important;
+        font-weight: 500;
+    }
+
+    .dropdown-item:hover {
+        background: #198754 !important;
+        color: white !important;
+    }
+}

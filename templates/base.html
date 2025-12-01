@@ -34,8 +34,9 @@
 
               </a> 
               <!-- Navbar Search Box -->
-              <form class="d-flex ms-auto search-bar" method="get" action="{% url 'landing' %}">
-                <input class="form-control me-2" type="search" name="q" placeholder="Search products..." aria-label="Search" value="{{ request.GET.q }}">
+              <form class="d-flex ms-auto search-bar" method="get" action="{% url 'shop' %}">
+                  <input class="form-control me-2" type="search" name="q" placeholder="Search products..." aria-label="Search" value="{{ request.GET.q }}">
+                 
               </form>
 
 

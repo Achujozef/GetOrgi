@@ -631,6 +631,7 @@ def order_summary(request):
         }, status=500)
 
 
+
 def verify_payment(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -649,26 +650,31 @@ def verify_payment(request):
             if order_mode == "buy_now":
                 product_id = request.session.get("buy_now_product_id")
                 product = Product.objects.get(id=product_id)
-                order = Order.objects.create(user=user, address=address, total_amount=product.price,is_paid=True)
+                order = Order.objects.create(user=user, address=address, total_amount=product.price, is_paid=True)
                 OrderItem.objects.create(order=order, product=product, quantity=1, price=product.price)
                 product.purchase_count += 1
                 product.save()
                 # Clear session flags
-                del request.session["order_mode"]
-                del request.session["buy_now_product_id"]
+                request.session.pop("order_mode", None)
+                request.session.pop("buy_now_product_id", None)
             else:
                 cart_items = CartItem.objects.filter(user=user)
                 total = sum(item.product.price * item.quantity for item in cart_items)
-                order = Order.objects.create(user=user, address=address, total_amount=total)
+                order = Order.objects.create(user=user, address=address, total_amount=total, is_paid=True)
                 for item in cart_items:
                     OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity, price=item.product.price)
                     item.product.purchase_count += item.quantity
                     item.product.save()
                 cart_items.delete()
-                del request.session["order_mode"]
+                request.session.pop("order_mode", None)
 
-            return JsonResponse({"status": "success"})
-        except:
+            # ✅ Return the redirect URL
+            return JsonResponse({
+                "status": "success",
+                "redirect_url": "/profile/"  # or wherever you want to redirect
+            })
+        except Exception as e:
+            print(f"Payment verification failed: {str(e)}")
             return JsonResponse({"status": "failed"})
 
     return JsonResponse({"status": "invalid"})
@@ -731,38 +737,14 @@ def submit_review(request):
 
 def contact_us(request):
 
-    try: 
-
-        user_mobile = request.session["mobile"]
-        user = OrgiUser.objects.get(mobile=user_mobile)
-
-        cart_items = CartItem.objects.filter(user=user)
-
-        cart_count = cart_items.count()
-        return render(request, 'contact_us.html',{
-            'cart_count':cart_count
-        })        
     
-    except Exception as e:
-      
-        print(f"Error in landing_page: {str(e)}")
-        
-        return render(request, 'error.html', {
-            'error_message': str(e)
-        }, status=500)
-
+    return render(request, 'contact_us.html')        
+    
+   
 
 def about_us(request):
 
-
-    user_mobile = request.session["mobile"]
-    user = OrgiUser.objects.get(mobile=user_mobile)
-
-    cart_items = CartItem.objects.filter(user=user)
-    cart_count = cart_items.count()
-    return render(request, 'about_us.html',{
-        'cart_count':cart_count
-    })
+    return render(request, 'about_us.html')
 
 def privacy_policy(request):
     return render(request, 'privacy_policy.html')
@@ -912,10 +894,16 @@ def order_detail(request, order_id):
         status_keys = [choice[0] for choice in status_choices]
         current_status_index = status_keys.index(order.status) if order.status in status_keys else -1
 
+        cart_items = CartItem.objects.filter(user=user)
+
+        cart_count = cart_items.count()
+
         context = {
             'order': order,
             'status_choices': status_choices,
             'current_status_index': current_status_index,
+            'cart_count':cart_count
+
         }
         return render(request, 'order_detail.html', context)
     

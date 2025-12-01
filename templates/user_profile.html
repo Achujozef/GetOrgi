@@ -72,7 +72,7 @@
                         <div>
                             <h5>{{ address.customer_name }}</h5>
                             <p class="mb-1"><strong>Address:</strong> {{ address.full_address }}</p>
-                            <p class="mb-1"><strong>Landmark:</strong> {{ address.landmark }}</p>
+                            <p class="mb-1"><strong>Landmark:</strong> {{ address.Landmark }}</p>
                             <p class="mb-1"><strong>City:</strong> {{ address.city }} | <strong>Pincode:</strong> {{ address.pincode }}</p>
                             <p class="mb-1"><strong>Phone:</strong> {{ address.phone }}</p>
                         </div>
@@ -81,7 +81,7 @@
                                 class="btn btn-outline-secondary"
                                 data-bs-toggle="modal"
                                 data-bs-target="#editAddressModal"
-                                onclick="fillEditAddressModal({{ address.id }}, '{{ address.customer_name }}', '{{ address.full_address|escapejs }}', '{{ address.landmark|escapejs }}', '{{ address.phone }}', '{{ address.city }}', '{{ address.pincode }}')"
+                                onclick="fillEditAddressModal({{ address.id }}, '{{ address.customer_name }}', '{{ address.full_address|escapejs }}', '{{ address.Landmark|escapejs }}', '{{ address.phone }}', '{{ address.city }}', '{{ address.pincode }}')"
                             >Edit</button>
                         </div>
                     </div>

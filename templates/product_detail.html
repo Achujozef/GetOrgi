@@ -29,21 +29,41 @@
         <div class="ms-2">{{ product.purchase_count }} purchased</div>
       </div>
 
-      <!-- Quantity Controls -->
-      <div class="d-flex align-items-center quantity-controls my-3">
-        <button class="btn btn-outline-success" id="decrease-quantity">-</button>
-        {% if cart_item %}
-          <input type="text" id="quantity-input" class="form-control mx-2" value="{{ cart_item.quantity }}">
+      <!-- Stock Status Badge -->
+
+      <div class="mb-3">
+        {% if product.stock > 0 %}
+          <span class="badge bg-success">In Stock</span>
         {% else %}
-          <input type="text" id="quantity-input" class="form-control mx-2" value="0">
+          <span class="badge bg-danger">Stock Out</span>
         {% endif %}
-        <button class="btn btn-outline-success" id="increase-quantity">+</button>
+      </div>
+
+  <div class="d-flex align-items-center quantity-controls my-3">
+        {% if product.stock > 0 %}
+          <button class="btn btn-outline-success" id="decrease-quantity">-</button>
+          {% if cart_item %}
+            <input type="text" id="quantity-input" class="form-control mx-2" value="{{ cart_item.quantity }}">
+          {% else %}
+            <input type="text" id="quantity-input" class="form-control mx-2" value="0">
+          {% endif %}
+          <button class="btn btn-outline-success" id="increase-quantity">+</button>
+        {% else %}
+          <button class="btn btn-outline-success" id="decrease-quantity" disabled>-</button>
+          <input type="text" id="quantity-input" class="form-control mx-2" value="0" disabled style="background-color: #f5f5f5;">
+          <button class="btn btn-outline-success" id="increase-quantity" disabled>+</button>
+        {% endif %}
       </div>
 
       <!-- Buttons -->
       <div class="d-flex gap-2 mt-4">
-        <a href="{% url 'cart' %}" class="btn btn-outline-success btn-premium w-50">Continue with Cart</a>
-        <a href="{% url 'buy_now' product.id %}" class="btn btn-success btn-premium w-50">Buy Now</a>
+        {% if product.stock > 0 %}
+          <a href="{% url 'cart' %}" class="btn btn-outline-success btn-premium w-50">Continue with Cart</a>
+          <a href="{% url 'buy_now' product.id %}" class="btn btn-success btn-premium w-50">Buy Now</a>
+        {% else %}
+          <button class="btn btn-outline-secondary btn-premium w-50" disabled>Continue with Cart</button>
+          <button class="btn btn-secondary btn-premium w-50" disabled>Out of Stock</button>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -143,121 +163,11 @@
 </div>
 
 <script>
-// Quantity Increase
-document.getElementById("increase-quantity").addEventListener("click", function() {
-  var quantityInput = document.getElementById("quantity-input");
-  var currentQuantity = parseInt(quantityInput.value) || 0;
-  quantityInput.value = currentQuantity + 1;
-  updateCart('increase');
-});
-
-// Quantity Decrease
-document.getElementById("decrease-quantity").addEventListener("click", function() {
-  var quantityInput = document.getElementById("quantity-input");
-  var currentQuantity = parseInt(quantityInput.value) || 0;
-  if (currentQuantity > 0) {
-    quantityInput.value = currentQuantity - 1;
-    updateCart('decrease');
-  }
-});
-
-// Update Cart
-function updateCart(action) {
-  var quantityInput = document.getElementById("quantity-input");
-  var quantity = parseInt(quantityInput.value);
-  var productId = "{{ product.id }}";
-
-  fetch("{% url 'update_cart_ajax' %}", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "X-CSRFToken": "{{ csrf_token }}"
-    },
-    body: new URLSearchParams({
-      product_id: productId,
-      action: action,
-      quantity: quantity
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-  if (data.status === 'success') {
-    console.log(`Cart ${action} successful.`);
-
-    // Update cart count in all locations
-    document.querySelectorAll('.cart-count').forEach(el => {
-      el.innerText = data.cart_count;
-    });
-
-    // Optional: update the quantity input field if returned
-    if (data.new_quantity !== undefined) {
-      quantityInput.value = data.new_quantity;
-    }
-
-  } else if (data.status === 'error' && data.message === 'Please login first.') {
-    alert("Please login first.");
-    window.location.href = "{% url 'login' %}?next={{ request.path }}";
-  }
-});
-}
-// Star rating behavior
-const stars = document.querySelectorAll("#star-rating i");
-const ratingInput = document.getElementById("rating");
-
-stars.forEach(star => {
-  star.addEventListener("click", function() {
-    const ratingValue = this.getAttribute("data-value");
-    ratingInput.value = ratingValue;
-    
-    stars.forEach(s => {
-      if (s.getAttribute("data-value") <= ratingValue) {
-        s.classList.remove("bi-star");
-        s.classList.add("bi-star-fill");
-        s.style.color = "gold";
-      } else {
-        s.classList.remove("bi-star-fill");
-        s.classList.add("bi-star");
-        s.style.color = "gray";
-      }
-    });
-  });
-});
-
-// Submit Review Form
-document.getElementById("review-form").addEventListener("submit", function(e) {
-  e.preventDefault();
-
-  const productId = document.getElementById("product_id").value;
-  const rating = document.getElementById("rating").value;
-  const comment = document.getElementById("comment").value;
-
-  if (!rating) {
-    alert("Please select a rating by clicking on the stars!");
-    return;
-  }
-
-  fetch("{% url 'submit_review' %}", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "X-CSRFToken": "{{ csrf_token }}"
-    },
-    body: new URLSearchParams({
-      product_id: productId,
-      rating: rating,
-      comment: comment
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.status === 'success') {
-      alert("Review submitted successfully!");
-      window.location.reload();
-    } else {
-      alert(data.message);
-    }
-  });
-});
+  const updateCartUrl = "{% url 'update_cart_ajax' %}";
+  const submitReviewUrl = "{% url 'submit_review' %}";
+  const loginUrl = "{% url 'login' %}?next={{ request.path }}";
+  const csrfToken = "{{ csrf_token }}";
 </script>
-{% comment %} <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script> {% endcomment %}
+<script src="{% static 'js/product_detail.js' %}"></script>
+
 {% endblock %}
