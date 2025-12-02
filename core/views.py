@@ -755,7 +755,7 @@ def terms_conditions(request):
 def return_policy(request):
     return render(request, 'return_policy.html')
 
-def user_profile(request):
+def user_profile(request): 
 
     try: 
 
@@ -775,12 +775,13 @@ def user_profile(request):
         user = OrgiUser.objects.get(mobile=user_mobile)
 
         cart_items = CartItem.objects.filter(user=user)
-        cart_count = cart_items.count()
+        cart_count = cart_items.count()   
 
         context = {
             'orders': orders,
             'addresses': addresses,
-            'cart_count':cart_count
+            'cart_count':cart_count,
+            
         }
 
     
@@ -889,6 +890,9 @@ def order_detail(request, order_id):
         user = OrgiUser.objects.get(mobile=request.session['mobile'])
         order = get_object_or_404(Order, id=order_id, user=user)
 
+        delivery_charge = Delivery.objects.first().charge if Delivery.objects.exists() else 0
+        grand_total = order.total_amount + delivery_charge
+
         # Prepare status choices and current status index
         status_choices = order.STATUS_CHOICES  # list of tuples e.g. [('pending', 'Pending'), ...]
         status_keys = [choice[0] for choice in status_choices]
@@ -902,7 +906,8 @@ def order_detail(request, order_id):
             'order': order,
             'status_choices': status_choices,
             'current_status_index': current_status_index,
-            'cart_count':cart_count
+            'cart_count':cart_count,
+            'grand_total': grand_total
 
         }
         return render(request, 'order_detail.html', context)

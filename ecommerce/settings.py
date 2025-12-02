@@ -132,3 +132,6 @@ AUTH_USER_MODEL = 'core.OrgiUser'
 
 RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID')
 RAZORPAY_SECRET_KEY = config('RAZORPAY_SECRET_KEY')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

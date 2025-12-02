@@ -36,25 +36,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRFToken': csrftoken,
                 }
             })
-            // .then(response => response.json())
             .then(response => {
-                                console.log('Fetch response received:', response); // Add this
-                                if (!response.ok) {
-                                    throw new Error('Network response was not ok');
-                                }
-                                return response.json();
-                            })
+                console.log('Fetch response received:', response);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
-                console.log('Response data:', data); // Debug log
+                console.log('Response data:', data);
                 quantityInput.value = data.new_quantity;
                 document.querySelector(`#cart-item-${cartItemId} td:nth-child(4)`).textContent = '₹' + data.new_total.toFixed(2); 
-                // subtotal-newtotal
-                document.getElementById('cart-total').textContent = 'Total: ₹' + data.total;//.toFixed(2);
+                document.getElementById('cart-total').textContent = 'Total: ₹' + data.total;
     
-                const cartCountElem = document.querySelector(".cart-count");
-                if (cartCountElem) {
-                    cartCountElem.textContent = data.cart_count;
-                }
+                // ✅ FIX: Update ALL cart count elements
+                document.querySelectorAll('.cart-count').forEach(el => {
+                    el.textContent = data.cart_count;
+                });
             });
         });
     });
@@ -81,13 +79,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         itemRow.remove();
                     }
     
-                    document.getElementById('cart-total').textContent = 'Total: ₹' + data.total;//.toFixed(2);
+                    document.getElementById('cart-total').textContent = 'Total: ₹' + data.total;
                     
-    
-                    const cartCountElem = document.querySelector(".cart-count");
-                    if (cartCountElem) {
-                        cartCountElem.textContent = data.cart_count;
-                    }
+                    // ✅ FIX: Update ALL cart count elements
+                    document.querySelectorAll('.cart-count').forEach(el => {
+                        el.textContent = data.cart_count;
+                    });
     
                     if (data.cart_count === 0) {
                         window.location.reload();

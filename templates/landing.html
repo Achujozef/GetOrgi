@@ -70,16 +70,7 @@
                             </div>
                         </div>
                     </a>
-                    {% comment %} <div class="quantity-controls">
-                        <button class="prevent-click decrease-btn" aria-label="Decrease quantity">−</button>
-                        <input type="text" 
-                               value="{{ cart_quantities|get_item:product.id|default:'0' }}" 
-                               class="form-control quantity-box prevent-click" 
-                               data-product-id="{{ product.id }}"
-                               readonly>
-                        <button class="prevent-click increase-btn" aria-label="Increase quantity">+</button>
-                    </div> {% endcomment %}
-
+                    
                     <div class="quantity-controls">
                         {% if product.stock > 0 %}
                             <button class="prevent-click decrease-btn" aria-label="Decrease quantity">-</button>

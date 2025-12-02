@@ -98,7 +98,7 @@ function hideLoader() {
     document.getElementById("otp-loader").classList.remove("show");
 }
 
- function sendOTP() {
+function sendOTP() {
     let phone = document.getElementById("phoneNumber").value.trim();
     if (!/^\d{10}$/.test(phone)) {
         showMessage("danger", "Enter a valid 10-digit phone number.");
@@ -133,8 +133,7 @@ function hideLoader() {
            hideLoader();
            sendBtn.disabled = false;
        });
-}
-
+} 
 
     function verifyOTP() {
         const code = document.getElementById("otpInput").value.trim();
@@ -198,4 +197,19 @@ function hideLoader() {
     }
 </script>
 
+<script>
+    // Auto-dismiss ALL messages after 3 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        const allAlerts = document.querySelectorAll('.alert');
+        allAlerts.forEach(function(alert) {
+            setTimeout(function() {
+                alert.style.transition = 'opacity 0.5s ease-out';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.remove();
+                }, 500);
+            }, 4000);
+        });
+    });
+</script>
 {% endblock %}

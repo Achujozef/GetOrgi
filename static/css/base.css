@@ -223,6 +223,8 @@
 
    flex-direction: row; /* Make it horizontal with icon and message */
 
+   text-decoration: none;
+
  }
 
  /* WhatsApp Icon Hover Effect */
